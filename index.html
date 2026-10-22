@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunday Songs</title>
+<meta name="description" content="Fill in the Sunday song plan, then copy it into a text or email to the team.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F6F3F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161114" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-title" content="Sunday Songs">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta property="og:title" content="Sunday Songs">
+<meta property="og:description" content="Fill in the Sunday song plan, then copy it to the team.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Libre+Caslon+Text:wght@400;700&family=Oswald:wght@500;600&display=swap">
+<style>
+/* Layout: one narrow column read top to bottom like a bulletin's order of worship, in three real steps
+   (pick the Sunday, fill the blanks, send). Hymn numbers sit in dark tiles like the cards on a church hymn board. */
+:root{
+  --paper:#F6F3F4;
+  --surface:#FFFFFF;
+  --ink:#251B1F;
+  --muted:#675A5F;
+  --line:#E2D8DB;
+  --edge:#8F7F85;
+  --tint:#F1E9EB;
+  --accent:#7A1E2E;
+  --accent-ink:#FFFFFF;
+  --gold:#8E6417;
+  --board:#2B2226;
+  --board-ink:#FFFFFF;
+  --board-dim:#8C7F83;
+  --board-gold:#E6BC6A;
+  --focus:#8E6417;
+  --good:#22663A;
+  --good-tint:#E3F1E7;
+  --warn:#8A4B00;
+  --warn-tint:#FBEEDC;
+  --font-display:"Libre Caslon Text", Georgia, "Times New Roman", serif;
+  --font-body:"Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-num:"Oswald", "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
+  --radius:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#161114; --surface:#211A1D; --ink:#F3ECEE; --muted:#B9ABB0; --line:#3A2F34; --edge:#7D6E74; --tint:#2A2125;
+    --accent:#E58B9B; --accent-ink:#2B0B12; --gold:#D9AE5B;
+    --board:#0D0A0B; --board-ink:#FFFFFF; --board-dim:#6F6266; --board-gold:#E6BC6A;
+    --focus:#E6BC6A; --good:#8ED3A0; --good-tint:#18301F; --warn:#F0BE6E; --warn-tint:#33240E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#161114; --surface:#211A1D; --ink:#F3ECEE; --muted:#B9ABB0; --line:#3A2F34; --edge:#7D6E74; --tint:#2A2125;
+  --accent:#E58B9B; --accent-ink:#2B0B12; --gold:#D9AE5B;
+  --board:#0D0A0B; --board-ink:#FFFFFF; --board-dim:#6F6266; --board-gold:#E6BC6A;
+  --focus:#E6BC6A; --good:#8ED3A0; --good-tint:#18301F; --warn:#F0BE6E; --warn-tint:#33240E;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--font-body); font-size:1.125rem; line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-top:calc(1.5rem + env(safe-area-inset-top, 0px));
+  padding-bottom:calc(4rem + env(safe-area-inset-bottom, 0px));
+  margin:0;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:34rem; margin-inline:auto; display:grid; gap:2rem}
+p{margin:0}
+
+/* Masthead */
+.masthead{display:grid; gap:.4rem; padding-bottom:1rem; border-bottom:4px double var(--gold)}
+.eyebrow{font-size:.85rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--gold)}
+h1{margin:0; font-family:var(--font-display); font-weight:700; font-size:clamp(2.3rem, 9vw, 2.9rem); line-height:1.08; color:var(--accent); text-wrap:balance}
+.lede{color:var(--muted); max-width:32rem}
+
+/* Steps */
+.step{display:grid; gap:1rem}
+h2{margin:0; display:flex; align-items:center; gap:.7rem; font-family:var(--font-display); font-weight:700; font-size:1.45rem; line-height:1.2; text-wrap:balance}
+h2[tabindex]:focus:not(:focus-visible){outline:none}
+.step-n{flex:none; display:inline-grid; place-items:center; width:2.1rem; height:2.5rem; border-radius:6px;
+  background:var(--board); color:var(--board-gold); font-family:var(--font-num); font-weight:600; font-size:1.35rem}
+
+/* Order of service */
+.service{list-style:none; margin:0; padding:0; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+.item{display:grid; gap:.6rem; padding:1rem; border-top:1px solid var(--line); min-width:0}
+.item:first-child{border-top:0}
+.item-fixed{background:var(--tint); padding-block:.65rem; color:var(--muted); font-style:italic; font-size:1rem}
+.item-head{display:flex; align-items:baseline; gap:.15rem .5rem; flex-wrap:wrap}
+.lbl{font-family:var(--font-display); font-weight:700; font-size:1.15rem; color:var(--accent)}
+.sub{font-family:var(--font-body); font-weight:400; font-size:.95rem; color:var(--muted)}
+.hint{font-size:.95rem; color:var(--muted)}
+.clear-row{margin-left:auto; align-self:center; min-height:2.5rem; padding:.3rem .8rem; border-radius:8px;
+  border:1.5px solid var(--line); background:var(--surface); color:var(--muted); font:inherit; font-size:.95rem; font-weight:700; cursor:pointer; touch-action:manipulation}
+
+/* Fields */
+.field{display:block; width:100%; min-height:3.25rem; font:inherit; font-size:1.125rem; color:var(--ink);
+  background:var(--surface); border:1.5px solid var(--edge); border-radius:10px; padding:.7rem .85rem}
+textarea.field{resize:vertical; line-height:1.45}
+.field::placeholder{color:var(--muted); opacity:.9}
+.field[type="date"]{max-width:17rem; -webkit-appearance:none; appearance:none; text-align:left}
+.field[type="date"]::-webkit-date-and-time-value{text-align:left}
+.nums{display:flex; gap:.75rem 1.75rem; flex-wrap:wrap}
+.num{display:grid; gap:.3rem}
+.num label{font-size:1rem; font-weight:700; color:var(--ink)}
+.tile{width:6rem; min-height:3.4rem; padding:.2rem .4rem; border-radius:8px; border:2px solid var(--board);
+  background:var(--board); color:var(--board-ink); font-family:var(--font-num); font-weight:600; font-size:1.75rem;
+  text-align:center; letter-spacing:.05em; font-variant-numeric:tabular-nums}
+.tile::placeholder{color:var(--board-dim); opacity:1}
+.field:focus,.tile:focus{outline:3px solid var(--focus); outline-offset:1px}
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+
+.oh-rows{display:grid; gap:.6rem}
+.oh-row{display:flex; gap:.5rem; align-items:center}
+.oh-row .field{flex:1 1 auto; min-width:0}
+.icon-btn{flex:none; width:3.25rem; height:3.25rem; border-radius:10px; border:1.5px solid var(--edge);
+  background:var(--surface); color:var(--muted); font:inherit; font-size:1.6rem; line-height:1; cursor:pointer; touch-action:manipulation}
+
+/* Buttons */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:.5rem; min-height:3rem; padding:.7rem 1.15rem;
+  border-radius:10px; border:1.5px solid transparent; font:inherit; font-weight:700; font-size:1.05rem; line-height:1.25;
+  text-align:center; text-decoration:none; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation}
+.btn-primary{background:var(--accent); color:var(--accent-ink)}
+.btn-primary:active{filter:brightness(.9)}
+.btn-quiet{background:var(--surface); color:var(--accent); border-color:var(--edge)}
+.btn-quiet:active{background:var(--tint)}
+.btn-big{width:100%; min-height:4rem; font-size:1.25rem}
+.btn-add{justify-self:start}
+.row{display:flex; gap:.75rem; flex-wrap:wrap; align-items:center}
+
+/* Banners and notices */
+.banner{display:grid; gap:.85rem; padding:1rem 1.1rem; background:var(--surface); border:1.5px solid var(--gold); border-radius:var(--radius)}
+.notice{display:flex; align-items:center; gap:.6rem .9rem; flex-wrap:wrap; padding:.75rem 1rem; border-radius:10px;
+  background:var(--good-tint); color:var(--good); font-weight:700}
+.notice span{flex:1 1 12rem; min-width:0}
+.notice .btn{min-height:2.75rem; padding:.45rem 1rem}
+.check{display:grid; gap:.55rem; padding:.75rem 1rem; border-radius:10px; font-size:1rem; font-weight:700}
+.check.is-good{background:var(--good-tint); color:var(--good)}
+.check.is-warn{background:var(--warn-tint); color:var(--warn)}
+.chips{display:flex; flex-wrap:wrap; gap:.45rem}
+.chip{display:inline-flex; align-items:center; min-height:2.75rem; padding:.3rem .85rem; border-radius:999px;
+  border:1.5px solid currentColor; background:var(--surface); color:inherit; font:inherit; font-size:.95rem; font-weight:700;
+  cursor:pointer; touch-action:manipulation}
+.status{font-weight:700}
+.status:empty{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0)}
+.is-good{color:var(--good)}
+.is-warn{color:var(--warn)}
+.date-long{font-weight:700}
+.date-warn{color:var(--warn); font-weight:700}
+.date-warn:empty{display:none}
+
+/* Paste-from-a-list box and "how to" details */
+details.box{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius)}
+details.box > summary{display:flex; gap:.7rem; align-items:flex-start; min-height:3rem; padding:1rem 1.1rem;
+  font-weight:700; color:var(--accent); cursor:pointer; list-style:none}
+details.box > summary::-webkit-details-marker{display:none}
+details.box > summary::before{content:"+"; flex:none; display:inline-grid; place-items:center; width:1.6rem; height:1.6rem;
+  border-radius:6px; background:var(--board); color:var(--board-gold); font-family:var(--font-num); font-weight:600; line-height:1}
+details.box[open] > summary::before{content:"\2212"}
+.box-body{display:grid; gap:.85rem; padding:0 1.1rem 1.1rem}
+.howto{margin:0; padding-left:1.4rem; display:grid; gap:.4rem}
+.howto ul{margin:.35rem 0 0; padding-left:1.1rem; display:grid; gap:.35rem}
+
+/* The message preview, shaped like a text bubble */
+.preview-label{font-weight:700}
+.bubble{white-space:pre-wrap; overflow-wrap:anywhere; min-width:0; margin:0;
+  background:var(--surface); border:1px solid var(--line); border-radius:20px 20px 20px 6px;
+  padding:1rem 1.15rem; font-family:var(--font-body); font-size:1.02rem; line-height:1.55;
+  -webkit-user-select:text; user-select:text}
+.copy-box{font-size:1rem}
+.then{display:grid; gap:.6rem; padding:1rem 1.1rem; background:var(--tint); border-radius:var(--radius)}
+.then h3{margin:0; font-size:1.05rem}
+.then h4{margin:.3rem 0 0; font-size:1rem; color:var(--accent)}
+
+.foot{display:grid; gap:.5rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:.95rem}
+.foot .is-warn{color:var(--warn); font-weight:700}
+.inapp-note{margin:0; padding:.75rem 1rem; border-radius:10px; background:var(--warn-tint); color:var(--warn); font-weight:700}
+
+.sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
+
+@media (prefers-reduced-motion: no-preference){
+  .flash{animation:flash 1.4s ease-out}
+  @keyframes flash{from{box-shadow:0 0 0 5px var(--board-gold)} to{box-shadow:0 0 0 0 transparent}}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Order of worship</p>
+    <h1>Sunday Songs</h1>
+    <p class="lede">Fill in the blanks, then copy the list and paste it into a text or email to the team.</p>
+  </header>
+
+  <p class="inapp-note" id="inappNote" hidden>You opened this inside Messenger. If you have the Sunday Songs icon on your Home Screen, use that instead. Your saved list is there.</p>
+
+  <div class="banner" id="banner" hidden>
+    <p><strong id="bannerHead"></strong> <span id="bannerText"></span></p>
+    <div class="row">
+      <button type="button" class="btn btn-primary" id="startNewBanner">Start a new Sunday</button>
+      <button type="button" class="btn btn-quiet" id="keepBanner" hidden>Keep working on this list</button>
+    </div>
+  </div>
+
+  <details class="box" id="pasteBox">
+    <summary>Got a song list in a text or email? Fill the form from it</summary>
+    <div class="box-body">
+      <ol class="howto">
+        <li>Copy the song list.
+          <ul>
+            <li><strong>From a text:</strong> tap and hold the message, then tap <strong>Copy</strong>.</li>
+            <li><strong>From an email:</strong> tap and hold the first song line until a word turns blue, drag the lower blue dot down past the last song, then tap <strong>Copy</strong>.</li>
+          </ul>
+        </li>
+        <li>Come back here, tap and hold in the box below, then tap <strong>Paste</strong>.</li>
+        <li>Tap <strong>Fill in the form</strong>.</li>
+      </ol>
+      <label for="pasteIn" class="sr-only">Song list to fill the form from</label>
+      <textarea id="pasteIn" class="field" rows="6" placeholder="Paste the song list here"></textarea>
+      <button type="button" class="btn btn-primary" id="pasteGo">Fill in the form</button>
+      <p class="status" id="pasteMsg" role="status" aria-live="polite"></p>
+    </div>
+  </details>
+
+  <section class="step" aria-labelledby="s1">
+    <h2 id="s1" tabindex="-1"><span class="step-n" aria-hidden="true">1</span>Pick the Sunday</h2>
+    <label for="date" class="lbl">Sunday date</label>
+    <input type="date" id="date" class="field">
+    <p class="date-long" id="dateLong"></p>
+    <p class="date-warn" id="dateWarn"></p>
+    <div class="row">
+      <button type="button" class="btn btn-quiet" id="startNew">Clear the form for a new Sunday</button>
+      <button type="button" class="btn btn-quiet" id="restorePrev" hidden>Bring back the earlier list</button>
+    </div>
+  </section>
+
+  <section class="step" aria-labelledby="s2">
+    <h2 id="s2" tabindex="-1"><span class="step-n" aria-hidden="true">2</span>Fill in the songs</h2>
+    <p class="hint">Type a song you've used before and its numbers fill in by themselves.</p>
+    <div class="notice" id="notice" hidden>
+      <span id="noticeText"></span>
+      <button type="button" class="btn btn-quiet" id="undoBtn">Undo</button>
+    </div>
+    <p class="sr-only" id="noticeLive" role="status"></p>
+    <ol class="service" id="service"></ol>
+    <label for="notes" class="lbl">Notes for the team <span class="sub">(optional)</span></label>
+    <textarea id="notes" class="field" rows="3" placeholder="Anything else the team should know"></textarea>
+  </section>
+
+  <section class="step" aria-labelledby="s3">
+    <h2 id="s3"><span class="step-n" aria-hidden="true">3</span>Send it to the team</h2>
+    <div class="check" id="blankCheck"></div>
+    <p class="preview-label">This is exactly what the team will get:</p>
+    <pre class="bubble" id="out"></pre>
+    <button type="button" class="btn btn-primary btn-big" id="copyBtn">Copy the song list</button>
+    <p class="status" id="copyMsg" role="status" aria-live="polite"></p>
+    <label for="copyBox" class="sr-only">The song list, ready to copy</label>
+    <textarea id="copyBox" class="field copy-box" hidden></textarea>
+    <div class="then">
+      <h3>Then paste it where the team will see it</h3>
+      <h4>By text</h4>
+      <ol class="howto">
+        <li>Open Messages and your group text with the team.</li>
+        <li>Tap and hold where you type, then tap <strong>Paste</strong>.</li>
+        <li>Tap send.</li>
+      </ol>
+      <h4>By email</h4>
+      <ol class="howto">
+        <li>Open last week's song email and tap <strong>Reply All</strong>, so everyone's address is already filled in.</li>
+        <li>Tap and hold in the message, then tap <strong>Paste</strong>.</li>
+        <li>If you like, change the date in the subject to <strong id="subjectDate"></strong>. The first line of the list already shows the new date.</li>
+        <li>Tap send.</li>
+      </ol>
+      <p class="hint">Starting a new email instead? A good subject is “<span id="subjectText"></span>”.</p>
+    </div>
+    <details class="box" id="helperBox">
+      <summary>Want someone else to fill in a blank?</summary>
+      <div class="box-body">
+        <ol class="howto">
+          <li>Tap <strong>Copy the list for a helper</strong>. It copies the list as it is now, with short directions on top.</li>
+          <li>Paste it into a text or email to them and send it.</li>
+          <li>They open this page, paste your list into <strong>Got a song list?</strong>, fill in their part, and send the list back to you.</li>
+        </ol>
+        <p>Empty blanks show as ____. When their list comes back, paste it into <strong>Got a song list?</strong> yourself. If they sent only their own line, it gets added to your list.</p>
+        <button type="button" class="btn btn-quiet" id="helperCopy">Copy the list for a helper</button>
+        <p class="status" id="helperMsg" role="status" aria-live="polite"></p>
+        <label for="helperCopyBox" class="sr-only">The list for a helper, ready to copy</label>
+        <textarea id="helperCopyBox" class="field copy-box" hidden></textarea>
+      </div>
+    </details>
+  </section>
+
+  <footer class="foot">
+    <p id="saveNote">Your work is kept on this phone, in the app you opened this page from. If Sunday Songs is on your Home Screen, always open it from that icon. Nobody sees your list until you paste it into a message.</p>
+    <p>Songs you copy are remembered the same way, so next time their numbers fill in for you.</p>
+  </footer>
+
+  <datalist id="songbook"></datalist>
+</div>
+
+<script>
+(function () {
+'use strict';
+
+/* The page's public link, used in the directions copied for a helper. Empty until the link is known. */
+const PAGE_LINK = 'https://gitmottegit.github.io/sunday-songs/';
+
+/* ===== The order of service, top to bottom ===== */
+const SERVICE = [
+  { key: 'welcome',    kind: 'song',  label: 'Welcome Song',   name: 'Welcome song', out: 'Welcome Song:' },
+  {                    kind: 'fixed', label: 'Welcome and Prayer' },
+  { key: 'hymn1',      kind: 'song',  label: 'Hymn', sub: 'first',  name: 'First hymn',  out: 'Hymn:' },
+  { key: 'hymn2',      kind: 'song',  label: 'Hymn', sub: 'second', name: 'Second hymn', out: 'Hymn:' },
+  { key: 'hymn3',      kind: 'song',  label: 'Hymn', sub: 'third, if needed', name: 'Third hymn', out: 'Hymn:', optional: true,
+    hint: 'Leave this empty to skip it. It won’t show in the message.' },
+  { key: 'special',    kind: 'text',  label: 'Special Music',  name: 'Special music', out: 'Special Music:', placeholder: 'Who is singing or playing' },
+  {                    kind: 'fixed', label: 'Offering' },
+  { key: 'offering',   kind: 'song',  label: 'Offering song', sub: 'during tithes and offerings',
+    name: 'Offering song', out: '(Bring Tithes and Offerings to Plate)' },
+  { key: 'overhead',   kind: 'list',  label: 'Overhead', sub: 'songs shown on the screen', name: 'Overhead songs', out: 'Overhead:' },
+  {                    kind: 'fixed', label: 'Sermon' },
+  { key: 'invitation', kind: 'song',  label: 'Invitation',     name: 'Invitation song', out: 'Invitation:' },
+  { key: 'closing',    kind: 'song',  label: 'Closing Prayer', name: 'Closing prayer song', out: 'Closing Prayer:' },
+  { key: 'exit',       kind: 'song',  label: 'Exit Song',      name: 'Exit song', out: 'Exit Song:' },
+  { key: 'ss',         kind: 'song',  label: 'SS Song', sub: 'Sunday School', name: 'Sunday School song', out: 'SS Song:' }
+];
+const SONG_KEYS = SERVICE.filter(i => i.kind === 'song').map(i => i.key);
+const HYMN_KEYS = ['hymn1', 'hymn2', 'hymn3'];
+const MAX_OVERHEAD = 6;
+const BLANK = '____';
+const INDENT = '          '; // lines up under the text after "Overhead: "
+
+/* Songs from the 10/18/26 list, so their numbers fill in from day one. */
+const BASE_BOOK = [
+  { t: 'Isn’t He Wonderful',         h: '38',  r: '705' },
+  { t: 'There’s Power in the Blood', h: '176', r: '298' },
+  { t: 'Are You Washed in the Blood',     h: '178', r: '297' },
+  { t: 'His Way With Thee',               h: '260', r: ''    },
+  { t: 'Springs of Living Water',         h: '',    r: '369' },
+  { t: 'God Is So Good',                  h: '22',  r: ''    },
+  { t: 'Give Thanks',                     h: '',    r: ''    },
+  { t: 'Be Still and Know',               h: '',    r: ''    },
+  { t: 'Hymn of Heaven',                  h: '',    r: ''    },
+  { t: 'God Be With You',                 h: '',    r: ''    }
+];
+
+const EXAMPLE = {
+  date: '2026-10-18',
+  songs: {
+    welcome:    { t: 'Isn’t He Wonderful',         h: '38',  r: '705' },
+    hymn1:      { t: 'There’s Power in the Blood', h: '176', r: '298' },
+    hymn2:      { t: 'Are You Washed in the Blood',     h: '178', r: '297' },
+    offering:   { t: 'Give Thanks',                     h: '',    r: ''    },
+    invitation: { t: 'His Way With Thee',               h: '260', r: ''    },
+    closing:    { t: 'God Be With You',                 h: '',    r: ''    },
+    exit:       { t: 'Springs of Living Water',         h: '',    r: '369' },
+    ss:         { t: 'God Is So Good',                  h: '22',  r: ''    }
+  },
+  special: '',
+  overhead: ['Be Still and Know', 'Hymn of Heaven'],
+  notes: '',
+  example: true
+};
+
+/* ===== Pure helpers: state, dates, message format, list parsing (no page access) ===== */
+const str = v => (typeof v === 'string' ? v : '');
+const digitsOf = v => str(v).replace(/\D/g, '').slice(0, 4);
+const oneLine = v => str(v).replace(/_{2,}/g, '').replace(/\s+/g, ' ').trim();
+const pad2 = n => String(n).padStart(2, '0');
+const plural = (n, word) => n + ' ' + word + (n === 1 ? '' : 's');
+
+function blankState(date) {
+  const songs = {};
+  SONG_KEYS.forEach(k => { songs[k] = { t: '', h: '', r: '' }; });
+  return { date: str(date), songs, special: '', overhead: ['', ''], notes: '', example: false };
+}
+
+function cleanState(s) {
+  const b = blankState(s && /^\d{4}-\d{2}-\d{2}$/.test(str(s.date)) ? s.date : '');
+  if (!s || typeof s !== 'object') return b;
+  SONG_KEYS.forEach(k => {
+    const v = s.songs && s.songs[k];
+    if (v && typeof v === 'object') b.songs[k] = { t: str(v.t), h: digitsOf(v.h), r: digitsOf(v.r) };
+  });
+  b.special = str(s.special);
+  b.notes = str(s.notes);
+  if (Array.isArray(s.overhead) && s.overhead.length) b.overhead = s.overhead.slice(0, MAX_OVERHEAD).map(str);
+  b.example = s.example === true;
+  return b;
+}
+
+const hasContent = s => SONG_KEYS.some(k => oneLine(s.songs[k].t) || s.songs[k].h || s.songs[k].r) ||
+  !!oneLine(s.special) || (s.overhead || []).some(t => oneLine(t)) || !!str(s.notes).trim();
+
+function todayStart() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+const isoOf = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+function todayISO() { return isoOf(todayStart()); }
+function nextSundayISO() {
+  const d = todayStart();
+  d.setDate(d.getDate() + ((7 - d.getDay()) % 7 || 7));
+  return isoOf(d);
+}
+function isoParts(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str(iso));
+  return m ? { y: +m[1], m: +m[2], d: +m[3] } : null;
+}
+function dateOf(iso) { const p = isoParts(iso); return p ? new Date(p.y, p.m - 1, p.d) : null; }
+function longDate(iso, withYear) {
+  const d = dateOf(iso);
+  const opts = { weekday: 'long', month: 'long', day: 'numeric' };
+  if (withYear) opts.year = 'numeric';
+  return d ? d.toLocaleDateString('en-US', opts) : '';
+}
+function shortDay(iso) { const d = dateOf(iso); return d ? d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : ''; }
+const weekdayOf = d => d.toLocaleDateString('en-US', { weekday: 'long' });
+function shortDate(iso) {
+  const p = isoParts(iso);
+  return p ? p.m + '/' + p.d + '/' + String(p.y).slice(-2) : '';
+}
+function subjectLine(s) {
+  const d = shortDate(s.date);
+  return 'Sunday Songs' + (d ? ' ' + d : '');
+}
+
+function formatSong(v) {
+  v = v || {};
+  const t = oneLine(v.t).replace(/[.\s]+$/, ''), h = digitsOf(v.h), r = digitsOf(v.r);
+  let s = [h, t].filter(Boolean).join(' ');
+  if (r) s += (s ? ' ' : '') + '(Rejoice ' + r + ')';
+  return s;
+}
+
+function buildMessage(s) {
+  const lines = [subjectLine(s), ''];
+  SERVICE.forEach(item => {
+    if (item.kind === 'fixed') { lines.push(item.label); return; }
+    if (item.kind === 'song') {
+      const v = formatSong(s.songs[item.key]);
+      if (!v && item.optional) return;
+      lines.push(item.out + ' ' + (v || BLANK));
+    } else if (item.kind === 'text') {
+      lines.push(item.out + ' ' + (oneLine(s.special) || BLANK));
+    } else if (item.kind === 'list') {
+      const songs = (s.overhead || []).map(oneLine).filter(Boolean);
+      if (!songs.length) lines.push(item.out + ' ' + BLANK);
+      songs.forEach((t, i) => lines.push(i ? INDENT + t : item.out + ' ' + t));
+    }
+  });
+  const notes = str(s.notes).trim();
+  if (notes) lines.push('', 'Notes: ' + notes);
+  return lines.join('\n');
+}
+
+/* The list with short directions on top, for someone asked to fill in a blank. */
+function helperMessage(s) {
+  return [
+    'Please fill in your part of the Sunday songs:',
+    '1. ' + (PAGE_LINK ? 'Open this page: ' + PAGE_LINK : 'Open the Sunday Songs page (ask me for the link if you need it).'),
+    '2. Tap “Got a song list?” and paste this whole message.',
+    '3. Fill in your part, tap Copy, and send it back to me.',
+    '',
+    buildMessage(s)
+  ].join('\n');
+}
+
+function missingBlanks(s) {
+  const missing = [];
+  SERVICE.forEach(item => {
+    const empty = item.kind === 'song' ? !item.optional && !formatSong(s.songs[item.key])
+      : item.kind === 'text' ? !oneLine(s.special)
+      : item.kind === 'list' ? !(s.overhead || []).some(t => oneLine(t))
+      : false;
+    if (empty) missing.push({ key: item.key, name: item.name || item.label });
+  });
+  return missing;
+}
+
+const normTitle = t => str(t).toLowerCase().replace(/[‘’`´']/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+
+/* Reads one song line, e.g. "176 There's Power in the Blood (298 Rejoice)" or "rejoice 369 Springs of Living Water".
+   With a song list, a known title that starts with a number ("40 Days") is kept whole. */
+function parseSong(raw, book) {
+  let s = oneLine(raw), h = '', r = '', m;
+  if ((m = /^rejoice\s*[:#]?\s*(\d{1,4})\s*/i.exec(s))) { r = m[1]; s = s.slice(m[0].length); }
+  m = /^#?(\d{1,4})\.?(?:\s+|$)/.exec(s);
+  if (m && !(book && book[normTitle(s)] && !book[normTitle(s.slice(m[0].length))])) { h = m[1]; s = s.slice(m[0].length); }
+  if ((m = /\(\s*(?:rejoice\s*[:#]?\s*(\d{1,4})|(\d{1,4})\s*(?:in\s+)?rejoice)\s*\)/i.exec(s))) {
+    r = r || m[1] || m[2];
+    s = s.slice(0, m.index) + s.slice(m.index + m[0].length);
+  }
+  if (!r && (m = /[\s,\-–—]*\brejoice\s*[:#]?\s*(\d{1,4})\s*$/i.exec(s))) { r = m[1]; s = s.slice(0, m.index); }
+  return { t: s.replace(/\s+/g, ' ').replace(/[\s,\-–—]+$/, '').trim(), h, r };
+}
+
+const FIXED_RE = /^(welcome\s+and\s+prayer|sermon)\b.*$|^(offering|offertory)\s*:?\s*$/i;
+const LABELS = [
+  { key: 'welcome',    re: /^welcome(\s+(song|hymn))?\s*[:\-–—]\s*/i },
+  { key: 'hymn',       re: /^(opening\s+)?hymn(\s*#?\d)?\s*[:\-–—]\s*/i },
+  { key: 'special',    re: /^special\s+music\s*[:\-–—]?\s*/i },
+  { key: 'offering',   re: /^\(?\s*bring\s+tithes[^)]*\)\s*[:\-–—]?\s*/i },
+  { key: 'offering',   re: /^(offering|offertory)(\s+song)?\s*[:\-–—]\s*/i },
+  { key: 'overhead',   re: /^overhead(\s+songs?)?\s*[:\-–—]?\s*/i },
+  { key: 'invitation', re: /^invitation(\s+(song|hymn))?\s*[:\-–—]\s*/i },
+  { key: 'closing',    re: /^closing(\s+(prayer|song|hymn))*\s*[:\-–—]\s*/i },
+  { key: 'exit',       re: /^exit(\s+(song|hymn))?\s*[:\-–—]\s*/i },
+  { key: 'ss',         re: /^(ss|sunday\s+school)(\s+(song|hymn))?\s*[:\-–—]\s*/i },
+  { key: 'notes',      re: /^notes?\s*[:\-–—]\s*/i }
+];
+const DATE_RE = /sunday\s+songs\D*?(\d{1,2})\s*[\/\-.]\s*(\d{1,2})(?:\s*[\/\-.]\s*(\d{4}|\d{2}))?(?!\d)/i;
+/* Where a reply or a signature starts: everything after it is an older message, not this list. */
+const STOP_RE = /\bwrote:\s*$|^begin forwarded message|^-{2,}\s*(original|forwarded)\s+message|^from:\s|^sent from my\b|^get outlook for\b|^on\s.*\b\d{4}\b.*\d{1,2}:\d{2}/i;
+
+function toISO(mo, da, yr) {
+  const m = +mo, d = +da;
+  let y;
+  if (yr) { y = +yr; if (y < 100) y += 2000; }
+  else {
+    // No year: this year, unless that date is more than a month gone, then next year.
+    const t = todayStart();
+    y = t.getFullYear();
+    if (new Date(y, m - 1, d) < new Date(y, t.getMonth(), t.getDate() - 30)) y++;
+  }
+  const dt = new Date(y, m - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return '';
+  return y + '-' + pad2(m) + '-' + pad2(d);
+}
+
+/* Turns a pasted song list (ours, or a hand-typed email in the same shape) back into form values.
+   Stops at a reply, a signature or a second list, so last week's songs quoted below don't leak in. */
+function parseList(text, book) {
+  const s = blankState('');
+  const hymns = [], overhead = [], seen = new Set();
+  let found = 0, skipped = 0, last = null, header = false, stopped = false, notesFinal = false, notes = '';
+  const lines = str(text).replace(/\r\n?/g, '\n').split('\n');
+  for (const rawLine of lines) {
+    let line = rawLine.replace(/[   \t]/g, ' ').replace(/[﻿​-‍]/g, '').trim();
+    if (last === 'notes' && notesFinal) {
+      // Notes close the list, so the lines after them are notes too, until a signature or reply.
+      if (line && STOP_RE.test(line)) { stopped = true; break; }
+      notes += '\n' + rawLine.replace(/\s+$/, '');
+      continue;
+    }
+    line = line.replace(/^(\s*>)+\s*/, '').replace(/^([•·*\-–—]|\d{1,2}[.)])\s+/, '');
+    if (!line) continue;
+    if (found > 0 && STOP_RE.test(line)) { stopped = true; break; }
+    const dm = DATE_RE.exec(line);
+    if (dm) {
+      if (found > 0) { stopped = true; break; }
+      header = true;
+      if (!s.date) s.date = toISO(dm[1], dm[2], dm[3]);
+      last = null;
+      continue;
+    }
+    if (FIXED_RE.test(line)) { last = null; continue; }
+    const L = LABELS.find(l => l.re.test(line));
+    if (L) {
+      if (L.key === 'hymn' ? hymns.length >= HYMN_KEYS.length : seen.has(L.key)) { stopped = true; break; }
+      seen.add(L.key);
+      const rest = line.replace(L.re, '');
+      found++;
+      last = L.key;
+      if (L.key === 'hymn') hymns.push(parseSong(rest, book));
+      else if (L.key === 'special') s.special = oneLine(rest);
+      else if (L.key === 'overhead') { if (oneLine(rest)) overhead.push(oneLine(rest)); }
+      else if (L.key === 'notes') {
+        notes = rest.replace(/_{2,}/g, '').trim();
+        notesFinal = found >= 5 || ['invitation', 'closing', 'exit', 'ss'].some(k => seen.has(k));
+      }
+      else s.songs[L.key] = parseSong(rest, book);
+      continue;
+    }
+    if (last === 'overhead') { overhead.push(oneLine(line)); continue; }
+    if (last === 'notes') { notes += (notes ? '\n' : '') + line; continue; }
+    skipped++;
+  }
+  s.notes = notes.replace(/^\n+|\s+$/g, '').replace(/\n{3,}/g, '\n\n');
+  hymns.forEach((v, i) => { s.songs[HYMN_KEYS[i]] = v; });
+  s.overhead = overhead.slice(0, MAX_OVERHEAD);
+  while (s.overhead.length < 2) s.overhead.push('');
+  return { state: s, found, skipped, header, stopped, seen: Array.from(seen), hymns, overhead: overhead.slice(0, MAX_OVERHEAD) };
+}
+
+/* Adds the filled-in lines of a short paste (e.g. one person's part) to an existing list. Returns how many it used. */
+function mergeInto(next, res) {
+  const got = res.state;
+  let used = 0;
+  res.seen.forEach(k => {
+    if (k === 'special') { if (oneLine(got.special)) { next.special = got.special; used++; } }
+    else if (k === 'notes') {
+      const add = got.notes.trim(), had = str(next.notes).trim();
+      if (add && add !== had) { next.notes = had ? had + '\n' + add : add; used++; }
+    }
+    else if (next.songs[k] && formatSong(got.songs[k])) { next.songs[k] = got.songs[k]; used++; }
+  });
+  res.hymns.filter(v => formatSong(v)).forEach(v => {
+    next.songs[HYMN_KEYS.find(k => !formatSong(next.songs[k])) || 'hymn3'] = v;
+    used++;
+  });
+  const oh = res.overhead.filter(t => oneLine(t));
+  if (oh.length) {
+    next.overhead = next.overhead.filter(t => oneLine(t)).concat(oh).slice(0, MAX_OVERHEAD);
+    while (next.overhead.length < 2) next.overhead.push('');
+    used += oh.length;
+  }
+  if (got.date) next.date = got.date;
+  return used;
+}
+
+/* For checking the format logic from a console. */
+window.SundaySongs = { buildMessage, helperMessage, parseList, parseSong, formatSong, blankState, missingBlanks, mergeInto, normTitle };
+
+/* ===== Page ===== */
+const $ = sel => document.querySelector(sel);
+const store = {
+  get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+const KEYS = { draft: 'sundaySongs.draft.v1', book: 'sundaySongs.songbook.v1', prev: 'sundaySongs.prev.v1' };
+const reduceMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const scrollMode = () => (reduceMotion() ? 'auto' : 'smooth');
+
+let exampleMode = false;
+let bannerMode = null;   // 'example', 'stale' or null
+let noticeKind = null;   // 'undo' and 'brief' notices go away on the next edit; 'info' ones wait for OK
+let saveWarned = false;
+let prevMem = null;      // the list that Clear, Fill or Undo last replaced
+const numsFor = {};      // the title each row's numbers belong to, so a new title can swap them
+
+function focusQuiet(el) {
+  if (!el) return;
+  try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+}
+function blurActive() {
+  const a = document.activeElement;
+  if (a && a !== document.body && a.blur) a.blur();
+}
+
+function getPrev() { return store.get(KEYS.prev) || prevMem; }
+function setPrev(s) {
+  prevMem = s ? JSON.parse(JSON.stringify(s)) : null;
+  store.set(KEYS.prev, prevMem);
+}
+
+function songRowHTML(item) {
+  const k = item.key;
+  const name = item.name || item.label;
+  const hint = item.hint ? '<p class="hint" id="' + k + '-hint">' + item.hint + '</p>' : '';
+  return '<div class="item-head">' +
+      '<label class="lbl" id="' + k + '-lbl" for="' + k + '-t">' + item.label + (item.sub ? ' <span class="sub">· ' + item.sub + '</span>' : '') + '</label>' +
+      '<button type="button" class="clear-row" data-clear="' + k + '" aria-label="Clear ' + name + '" hidden>Clear</button>' +
+    '</div>' + hint +
+    '<input class="field" id="' + k + '-t" type="text" list="songbook" autocomplete="off" autocapitalize="words" enterkeyhint="next"' +
+      ' placeholder="Song title"' + (item.hint ? ' aria-describedby="' + k + '-hint"' : '') + '>' +
+    '<div class="nums">' +
+      '<div class="num"><label id="' + k + '-h-lbl" for="' + k + '-h">Hymnal number</label>' +
+        '<input class="tile" id="' + k + '-h" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="–" aria-labelledby="' + k + '-h-lbl ' + k + '-lbl"></div>' +
+      '<div class="num"><label id="' + k + '-r-lbl" for="' + k + '-r">Rejoice number</label>' +
+        '<input class="tile" id="' + k + '-r" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="–" aria-labelledby="' + k + '-r-lbl ' + k + '-lbl"></div>' +
+    '</div>';
+}
+
+function buildForm() {
+  const list = $('#service');
+  SERVICE.forEach(item => {
+    const li = document.createElement('li');
+    if (item.kind === 'fixed') {
+      li.className = 'item item-fixed';
+      li.textContent = item.label;
+    } else if (item.kind === 'song') {
+      li.className = 'item';
+      li.innerHTML = songRowHTML(item);
+    } else if (item.kind === 'text') {
+      li.className = 'item';
+      li.innerHTML = '<div class="item-head"><label class="lbl" for="' + item.key + '">' + item.label + '</label>' +
+        '<button type="button" class="clear-row" data-clear="' + item.key + '" aria-label="Clear ' + item.name + '" hidden>Clear</button></div>' +
+        '<input class="field" id="' + item.key + '" type="text" autocapitalize="words" autocomplete="off" enterkeyhint="next" placeholder="' + item.placeholder + '">';
+    } else if (item.kind === 'list') {
+      li.className = 'item';
+      li.innerHTML = '<div class="item-head"><span class="lbl" id="overhead-lbl">' + item.label + '</span> <span class="sub">· ' + item.sub + '</span></div>' +
+        '<div class="oh-rows" id="ohRows" role="group" aria-labelledby="overhead-lbl"></div>' +
+        '<button type="button" class="btn btn-quiet btn-add" id="ohAdd">+ Add another overhead song</button>';
+    }
+    list.appendChild(li);
+  });
+}
+
+function setOverhead(arr) {
+  const rows = $('#ohRows');
+  const vals = (arr && arr.length ? arr : ['']).slice(0, MAX_OVERHEAD);
+  rows.innerHTML = '';
+  vals.forEach((v, i) => {
+    const row = document.createElement('div');
+    row.className = 'oh-row';
+    row.innerHTML = '<input class="field" id="overhead-' + i + '" type="text" list="songbook" autocomplete="off" autocapitalize="words" enterkeyhint="next"' +
+      ' placeholder="Song title" aria-label="Overhead song ' + (i + 1) + '">' +
+      (vals.length > 1 ? '<button type="button" class="icon-btn" data-ohrm="' + i + '" aria-label="Remove overhead song ' + (i + 1) + '">×</button>' : '');
+    row.querySelector('input').value = v;
+    rows.appendChild(row);
+  });
+  $('#ohAdd').hidden = vals.length >= MAX_OVERHEAD;
+}
+
+function readOverhead() {
+  return Array.from(document.querySelectorAll('#ohRows input')).map(i => i.value);
+}
+
+function readState() {
+  const s = blankState($('#date').value);
+  SONG_KEYS.forEach(k => {
+    s.songs[k] = { t: $('#' + k + '-t').value, h: $('#' + k + '-h').value, r: $('#' + k + '-r').value };
+  });
+  s.special = $('#special').value;
+  s.overhead = readOverhead();
+  s.notes = $('#notes').value;
+  s.example = exampleMode;
+  return s;
+}
+
+function applyState(s) {
+  $('#date').value = s.date;
+  SONG_KEYS.forEach(k => {
+    $('#' + k + '-t').value = s.songs[k].t;
+    $('#' + k + '-h').value = s.songs[k].h;
+    $('#' + k + '-r').value = s.songs[k].r;
+    numsFor[k] = normTitle(s.songs[k].t);
+  });
+  $('#special').value = s.special;
+  setOverhead(s.overhead);
+  $('#notes').value = s.notes;
+  exampleMode = s.example === true;
+  setBanner(exampleMode ? 'example' : null, s);
+}
+
+function setBanner(mode, s) {
+  bannerMode = mode;
+  $('#banner').hidden = !mode;
+  if (!mode) return;
+  if (mode === 'example') {
+    $('#bannerHead').textContent = 'This is an example:';
+    $('#bannerText').textContent = 'the songs from ' + longDate(EXAMPLE.date) + '. To plan a new Sunday, tap the button below. ' +
+      'If someone sent you a song list, open “Got a song list?” just below this box instead.';
+  } else {
+    $('#bannerHead').textContent = 'This is the list for ' + longDate(s.date) + '.';
+    $('#bannerText').textContent = 'That Sunday has passed. Start a new one, or keep working on this list.';
+  }
+  $('#keepBanner').hidden = mode === 'example';
+}
+
+/* ----- Song memory (on this phone only) ----- */
+function getBook() {
+  const book = {};
+  BASE_BOOK.forEach(e => { book[normTitle(e.t)] = e; });
+  const learned = store.get(KEYS.book);
+  if (learned && typeof learned === 'object') {
+    Object.keys(learned).forEach(k => {
+      const e = learned[k];
+      if (e && typeof e.t === 'string' && e.t.trim()) book[normTitle(e.t)] = { t: oneLine(e.t), h: digitsOf(e.h), r: digitsOf(e.r) };
+    });
+  }
+  return book;
+}
+
+function renderBook() {
+  const items = Object.values(getBook()).sort((a, b) => a.t.localeCompare(b.t));
+  const dl = $('#songbook');
+  dl.innerHTML = '';
+  items.forEach(e => { const o = document.createElement('option'); o.value = e.t; dl.appendChild(o); });
+}
+
+function learnSongs(s) {
+  const learned = {};
+  const saved = store.get(KEYS.book);
+  if (saved && typeof saved === 'object') {
+    Object.keys(saved).forEach(k => { const e = saved[k]; if (e && typeof e.t === 'string' && e.t.trim()) learned[normTitle(e.t)] = e; });
+  }
+  const book = getBook();
+  const add = (t, h, r) => {
+    t = oneLine(t).replace(/[.\s]+$/, '');
+    const k = normTitle(t);
+    if (!k) return;
+    const prev = learned[k] || book[k] || {};
+    learned[k] = { t, h: digitsOf(h) || digitsOf(prev.h), r: digitsOf(r) || digitsOf(prev.r) };
+  };
+  SONG_KEYS.forEach(k => add(s.songs[k].t, s.songs[k].h, s.songs[k].r));
+  (s.overhead || []).forEach(t => add(t, '', ''));
+  store.set(KEYS.book, learned);
+  renderBook();
+}
+
+function flash(els) {
+  if (reduceMotion()) return;
+  els.forEach(el => { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); });
+}
+
+/* Fills a row's numbers from the song memory. If the title changed and the numbers still belong to
+   the old song, they are swapped for the new song's (or cleared). Numbers typed by hand are left alone. */
+function tryAutofill(k) {
+  const t = $('#' + k + '-t'), h = $('#' + k + '-h'), r = $('#' + k + '-r');
+  const book = getBook(), now = normTitle(t.value), hit = book[now];
+  const before = numsFor[k] || '', was = book[before];
+  const stale = now !== before && !!(h.value || r.value) && !!was && h.value === was.h && r.value === was.r;
+  if (!stale && (!hit || (!hit.h && !hit.r) || h.value || r.value)) return;
+  h.value = hit ? hit.h : '';
+  r.value = hit ? hit.r : '';
+  numsFor[k] = now;
+  flash([h, r]);
+  render();
+}
+
+/* ----- Render ----- */
+function renderDate(iso) {
+  const d = dateOf(iso);
+  const long = $('#dateLong'), warn = $('#dateWarn');
+  if (!d) { long.textContent = 'Pick the Sunday these songs are for.'; warn.textContent = ''; return; }
+  long.textContent = longDate(iso, true);
+  const notes = [];
+  if (d.getDay() !== 0) notes.push('That date is a ' + weekdayOf(d) + ', not a Sunday.');
+  if (d < todayStart()) notes.push('That Sunday has already passed.');
+  warn.textContent = notes.join(' ');
+}
+
+const fieldFor = key => (key === 'special' ? '#special' : key === 'overhead' ? '#overhead-0' : '#' + key + '-t');
+
+let checkSig = '';
+function renderCheck(s) {
+  const problems = [];
+  const d = dateOf(s.date);
+  if (exampleMode) {
+    problems.push({ text: 'This is still the example list from ' + longDate(EXAMPLE.date) + '. Tap “Start a new Sunday” at the top before you copy it.', go: 'top', label: 'Go to the top' });
+  } else if (d) {
+    if (d.getDay() !== 0) problems.push({ text: 'The date in step 1 is a ' + weekdayOf(d) + ', not a Sunday.', go: 'step1', label: 'Go to step 1' });
+    if (d < todayStart()) problems.push({ text: 'This list is for ' + longDate(s.date) + ', which has already passed. To plan a new Sunday, tap “Clear the form for a new Sunday” in step 1.', go: 'step1', label: 'Go to step 1' });
+  }
+  const missing = missingBlanks(s);
+  if (!d) missing.unshift({ key: 'step1', name: 'The date' });
+
+  const sig = JSON.stringify([problems.map(p => p.text), missing.map(m => m.key)]);
+  if (sig === checkSig) return;
+  checkSig = sig;
+
+  const box = $('#blankCheck');
+  box.className = 'check ' + (problems.length || missing.length ? 'is-warn' : 'is-good');
+  box.textContent = '';
+  const para = text => { const p = document.createElement('p'); p.textContent = text; box.appendChild(p); };
+  const chipRow = list => {
+    const row = document.createElement('div');
+    row.className = 'chips';
+    list.forEach(c => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.textContent = c.label;
+      b.setAttribute('data-go', c.go);
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+  };
+  if (!problems.length && !missing.length) { para('Every blank is filled in.'); return; }
+  if (problems.length) {
+    problems.forEach(p => para(p.text));
+    chipRow([problems[0]]);
+  }
+  if (missing.length) {
+    para((missing.length === 1 ? '1 blank is' : missing.length + ' blanks are') + ' still empty. Tap one to go to it. Empty blanks show as ____ in the message.');
+    chipRow(missing.map(m => ({ label: m.name, go: m.key })));
+  }
+}
+
+function goTo(where) {
+  if (where === 'top') { $('#banner').scrollIntoView({ behavior: scrollMode(), block: 'start' }); focusQuiet($('#startNewBanner')); return; }
+  if (where === 'step1') { $('#s1').scrollIntoView({ behavior: scrollMode(), block: 'start' }); focusQuiet($('#s1')); return; }
+  const f = $(fieldFor(where));
+  if (!f) return;
+  f.scrollIntoView({ behavior: scrollMode(), block: 'center' });
+  focusQuiet(f);
+}
+
+function renderPrev() {
+  const prev = getPrev();
+  const p = prev ? cleanState(prev) : null;
+  const btn = $('#restorePrev');
+  btn.hidden = !(p && !p.example && hasContent(p));
+  if (!btn.hidden) btn.textContent = 'Bring back the earlier list' + (p.date ? ' (' + shortDay(p.date) + ')' : '');
+}
+
+/* The two copy buttons: the list for the team, and the list with directions for a helper. */
+const COPIERS = {
+  list: {
+    btn: '#copyBtn', msg: '#copyMsg', box: '#copyBox',
+    text: s => buildMessage(s),
+    label: s => (shortDay(s.date) ? 'Copy the list for ' + shortDay(s.date) : 'Copy the song list'),
+    done: 'Copied. Now open Messages or Mail, tap and hold where you type, and tap Paste.',
+    copied: null, showingDone: false, timer: 0
+  },
+  helper: {
+    btn: '#helperCopy', msg: '#helperMsg', box: '#helperCopyBox',
+    text: s => helperMessage(s),
+    label: () => 'Copy the list for a helper',
+    done: 'Copied, with directions on top. Paste it into a text or email to your helper.',
+    copied: null, showingDone: false, timer: 0
+  }
+};
+const rowsFor = text => Math.min(24, text.split('\n').length + 1);
+
+function renderCopier(c, s) {
+  const text = c.text(s);
+  const box = $(c.box);
+  if (!box.hidden && box.value !== text) { box.value = text; box.rows = rowsFor(text); }
+  if (c.copied !== null && text !== c.copied) {
+    c.copied = null;
+    c.showingDone = false;
+    clearTimeout(c.timer);
+    const m = $(c.msg);
+    m.className = 'status is-warn';
+    m.textContent = 'You changed the list after copying it. Tap Copy again so the new version goes out.';
+  }
+  if (!c.showingDone) $(c.btn).textContent = c.label(s);
+}
+
+function render() {
+  const s = readState();
+  $('#out').textContent = buildMessage(s);
+  $('#subjectText').textContent = subjectLine(s);
+  $('#subjectDate').textContent = shortDate(s.date) || 'the new date';
+  renderDate(s.date);
+  renderCheck(s);
+  document.querySelectorAll('[data-clear]').forEach(b => {
+    const k = b.getAttribute('data-clear');
+    b.hidden = k === 'special' ? !s.special : !(s.songs[k].t || s.songs[k].h || s.songs[k].r);
+  });
+  renderPrev();
+  Object.keys(COPIERS).forEach(n => renderCopier(COPIERS[n], s));
+  if (!store.set(KEYS.draft, s) && !saveWarned) {
+    saveWarned = true;
+    const f = $('#saveNote');
+    f.className = 'is-warn';
+    f.textContent = 'This phone isn’t saving your work on this page. Copy the list before you close it.';
+  }
+}
+
+function showNotice(text, kind) {
+  noticeKind = kind;
+  $('#noticeText').textContent = text;
+  $('#undoBtn').textContent = kind === 'undo' ? 'Undo' : 'OK';
+  $('#notice').hidden = false;
+  $('#noticeLive').textContent = text;
+}
+function hideNotice() {
+  noticeKind = null;
+  $('#notice').hidden = true;
+}
+
+function userEdited(e) {
+  if (noticeKind === 'undo' || noticeKind === 'brief') hideNotice();
+  if (bannerMode) setBanner(null);
+  if (exampleMode) {
+    // Editing the example plans a new Sunday from it, so move the date off 10/18.
+    exampleMode = false;
+    if (!(e && e.target && e.target.id === 'date')) {
+      $('#date').value = nextSundayISO();
+      showNotice('The date is now ' + longDate(nextSundayISO()) + '. You can change it in step 1.', 'info');
+    }
+  }
+  render();
+}
+
+function scrollToSongs() {
+  $('#s2').scrollIntoView({ behavior: scrollMode(), block: 'start' });
+  focusQuiet($('#s2'));
+}
+
+function startNew() {
+  blurActive();
+  const cur = readState();
+  const date = nextSundayISO();
+  const had = hasContent(cur);
+  if (!had && cur.date === date && !exampleMode) { scrollToSongs(); return; } // already clear, e.g. a second tap
+  if (had) setPrev(cur);
+  applyState(blankState(date));
+  render();
+  showNotice('Cleared. Ready for ' + longDate(date) + '.' + (had ? ' Tapped this by mistake? Tap Undo.' : ''), had ? 'undo' : 'brief');
+  scrollToSongs();
+}
+
+/* Undo and "Bring back the earlier list": swap the current list with the one that was replaced. */
+function swapPrev() {
+  const prev = getPrev();
+  if (!prev) { hideNotice(); return; }
+  blurActive();
+  const cur = readState();
+  setPrev(hasContent(cur) ? cur : null);
+  applyState(cleanState(prev));
+  render();
+  showNotice('Brought back the earlier list.' + (getPrev() ? ' Changed your mind? Tap Undo.' : ''), getPrev() ? 'undo' : 'brief');
+  scrollToSongs();
+}
+
+/* ----- Copy ----- */
+/* A copy made right inside the tap, which iPhones allow when the clipboard API is refused. */
+function syncCopy(text) {
+  const back = document.activeElement;
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.setAttribute('aria-hidden', 'true');
+  ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;border:0;padding:0;font-size:16px';
+  document.body.appendChild(ta);
+  let ok = false;
+  try {
+    focusQuiet(ta);
+    ta.setSelectionRange(0, text.length);
+    ok = document.execCommand('copy');
+  } catch (e) { ok = false; }
+  ta.remove();
+  try { window.getSelection().removeAllRanges(); } catch (e) { /* nothing selected */ }
+  if (back && back.tagName === 'BUTTON') focusQuiet(back);
+  return ok;
+}
+
+function copyText(text, onDone) {
+  let finished = false;
+  const done = ok => { if (!finished) { finished = true; onDone(ok); } };
+  let p = null;
+  try { p = navigator.clipboard && navigator.clipboard.writeText(text); } catch (e) { p = null; }
+  if (syncCopy(text)) {
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+    done(true);
+  } else if (p && typeof p.then === 'function') {
+    p.then(() => done(true), () => done(false));
+  } else {
+    done(false);
+  }
+}
+
+function doCopy(c) {
+  const s = readState();
+  const text = c.text(s);
+  copyText(text, ok => {
+    const btn = $(c.btn), m = $(c.msg), box = $(c.box);
+    clearTimeout(c.timer);
+    if (ok) {
+      c.copied = text;
+      c.showingDone = true;
+      box.hidden = true;
+      btn.textContent = 'Copied ✓';
+      m.className = 'status is-good';
+      m.textContent = c.done;
+      c.timer = setTimeout(() => { c.showingDone = false; btn.textContent = c.label(readState()); }, 5000);
+    } else {
+      c.copied = null;
+      c.showingDone = false;
+      box.value = text;
+      box.rows = rowsFor(text);
+      box.hidden = false;
+      m.className = 'status is-warn';
+      m.textContent = 'This phone didn’t let the page copy by itself. Tap inside the box below, tap it again, tap Select All, then tap Copy.';
+    }
+  });
+  learnSongs(s);
+}
+
+/* ----- Fill from a pasted list ----- */
+function onPasteFill() {
+  const text = $('#pasteIn').value;
+  const t = text.trim();
+  const msg = $('#pasteMsg');
+  const warn = words => { msg.className = 'status is-warn'; msg.textContent = words; };
+  if (!t) { warn('The box is empty. Tap and hold inside it, then tap Paste.'); return; }
+  const res = parseList(text, getBook());
+  if (!res.found) {
+    warn(!/\n/.test(t) && t.length < 40
+      ? 'Only a word or two came through. Go back, drag the blue dots to cover the whole list, then copy it again.'
+      : 'I couldn’t find any song lines in that. A song list has lines like “Hymn: 176 There’s Power in the Blood”.');
+    return;
+  }
+  const cur = readState();
+  const had = hasContent(cur);
+  let next, note;
+  if (res.header || res.found >= 5) {
+    // A whole list: it replaces the form.
+    next = res.state;
+    note = 'Filled in ' + plural(res.found, 'line') + ' from the list.';
+    if (res.stopped) note += ' I left out an older list that came after it.';
+    if (!next.date) {
+      const old = cur.example ? '' : cur.date;
+      next.date = old && old >= todayISO() ? old : nextSundayISO();
+      note += ' I couldn’t find a date in it, so it’s set to ' + longDate(next.date) + '. Check step 1.';
+    }
+  } else {
+    // A few lines, like one person's part: add them to the list that's here (or to a fresh one if that's old).
+    const stale = cur.example || !cur.date || cur.date < todayISO();
+    next = stale ? blankState(nextSundayISO()) : cleanState(cur);
+    const used = mergeInto(next, res);
+    if (!used) { warn('Those lines were all empty, so nothing changed.'); return; }
+    note = 'Added ' + plural(used, 'line') + (stale ? ' to a new list for ' + longDate(next.date) : ' to the list that was already here') + '.';
+  }
+  next.example = false;
+  note += ' Check the songs below.' + (had ? ' Wrong list? Tap Undo.' : '');
+  if (had) setPrev(cur);
+  applyState(next);
+  render();
+  learnSongs(next);
+  $('#pasteIn').value = '';
+  msg.textContent = '';
+  blurActive();
+  $('#pasteBox').open = false;
+  showNotice(note, had ? 'undo' : 'info');
+  scrollToSongs();
+}
+
+/* ----- Wire up ----- */
+function bind() {
+  const list = $('#service');
+  list.addEventListener('input', e => {
+    const el = e.target;
+    if (el.classList.contains('tile')) {
+      const clean = el.value.replace(/\D/g, '').slice(0, 4);
+      if (clean !== el.value) el.value = clean;
+      const k = el.id.slice(0, -2);
+      numsFor[k] = normTitle($('#' + k + '-t').value);
+    }
+    userEdited(e);
+    // A pick from the suggestion list arrives as a replacement rather than typing.
+    if (/-t$/.test(el.id) && (!e.inputType || e.inputType === 'insertReplacementText')) tryAutofill(el.id.slice(0, -2));
+  });
+  list.addEventListener('change', e => {
+    if (/-t$/.test(e.target.id)) tryAutofill(e.target.id.slice(0, -2));
+  });
+  list.addEventListener('click', e => {
+    const clear = e.target.closest('[data-clear]');
+    const rm = e.target.closest('[data-ohrm]');
+    if (clear) {
+      const k = clear.getAttribute('data-clear');
+      if (k === 'special') { $('#special').value = ''; $('#special').focus(); }
+      else { ['t', 'h', 'r'].forEach(f => { $('#' + k + '-' + f).value = ''; }); numsFor[k] = ''; $('#' + k + '-t').focus(); }
+      userEdited(e);
+    } else if (rm) {
+      const vals = readOverhead();
+      const i = +rm.getAttribute('data-ohrm');
+      vals.splice(i, 1);
+      setOverhead(vals);
+      const next = $('#overhead-' + Math.min(i, vals.length - 1));
+      if (next) next.focus();
+      userEdited(e);
+    } else if (e.target.closest('#ohAdd')) {
+      const vals = readOverhead();
+      if (vals.length >= MAX_OVERHEAD) return;
+      vals.push('');
+      setOverhead(vals);
+      $('#overhead-' + (vals.length - 1)).focus();
+      userEdited(e);
+    }
+  });
+  // The keyboard's "next" key moves on to the next song box (number boxes are skipped).
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.isComposing) return;
+    const el = e.target;
+    if (!el.matches || !el.matches('#service input.field')) return;
+    e.preventDefault();
+    const fields = Array.from(document.querySelectorAll('#service input.field, #notes')).filter(f => f.offsetParent !== null);
+    const next = fields[fields.indexOf(el) + 1];
+    if (next) next.focus(); else el.blur();
+  });
+  $('#date').addEventListener('input', userEdited);
+  $('#date').addEventListener('change', userEdited);
+  $('#notes').addEventListener('input', userEdited);
+  $('#startNew').addEventListener('click', startNew);
+  $('#startNewBanner').addEventListener('click', startNew);
+  $('#keepBanner').addEventListener('click', () => { setBanner(null); focusQuiet($('#s1')); });
+  $('#restorePrev').addEventListener('click', swapPrev);
+  $('#undoBtn').addEventListener('click', () => {
+    if (noticeKind === 'undo') swapPrev();
+    else { hideNotice(); focusQuiet($('#s2')); }
+  });
+  $('#blankCheck').addEventListener('click', e => {
+    const b = e.target.closest('[data-go]');
+    if (b) goTo(b.getAttribute('data-go'));
+  });
+  $('#copyBtn').addEventListener('click', () => doCopy(COPIERS.list));
+  $('#helperCopy').addEventListener('click', () => doCopy(COPIERS.helper));
+  $('#pasteGo').addEventListener('click', onPasteFill);
+}
+
+function start() {
+  buildForm();
+  renderBook();
+  const saved = store.get(KEYS.draft);
+  const s = cleanState(saved || EXAMPLE);
+  applyState(s);
+  const d = dateOf(s.date);
+  if (!s.example && d && d < todayStart() && hasContent(s)) setBanner('stale', s);
+  bind();
+  render();
+  if (window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)) {
+    $('#saveNote').textContent = 'Your work is kept inside this Sunday Songs icon on this phone, so always open it from the icon. Nobody sees your list until you paste it into a message.';
+  }
+  if (/FBAN|FBAV|FB_IAB|FBIOS|Messenger/i.test(navigator.userAgent || '')) $('#inappNote').hidden = false;
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+}
+
+start();
+})();
+</script>
+</body>
+</html>
