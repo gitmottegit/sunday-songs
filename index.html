@@ -201,9 +201,10 @@ details.box[open] > summary::before{content:"\2212"}
 .print-box h3{margin:0; font-size:1.1rem}
 
 /* The printed song sheet: always exactly one US Letter page, in large black Arial for older readers, with no
-   ruled lines. The song titles and the other words filled in each week (the date, special music, notes) print on
-   yellow; the book numbers print plain. It is drawn as one picture (renderPrint) that always spans the page width
-   and keeps its shape, so a phone's text size or zoom can't push it past the bottom of the page. */
+   ruled lines. The songs that change each week, special music and notes print on light yellow; the date, the
+   offering and closing songs (the same every week) and the book numbers print plain. It is drawn as one
+   picture (renderPrint) that always spans the page width and keeps its shape, so a phone's text size or zoom
+   can't push it past the bottom of the page. */
 .print-sheet{display:none}
 @media print{
   @page{size:letter portrait; margin:.5in}
@@ -317,7 +318,7 @@ details.box[open] > summary::before{content:"\2212"}
     </div>
     <div class="print-box" id="printBox">
       <h3>Printing copies for church?</h3>
-      <p>This prints the songs on one page in big, easy-to-read letters. The song titles, the date, special music and notes print on yellow. The book numbers print plain.</p>
+      <p>This prints the songs on one page in big, easy-to-read letters. The songs that change each week, special music and notes print on light yellow. The date, the offering and closing songs, and the book numbers print plain.</p>
       <button type="button" class="btn btn-quiet btn-big" id="printBtn">Print the song sheet</button>
       <p class="hint" id="printHow">On the print screen, pick your printer and how many copies, then tap <strong>Print</strong>.</p>
       <p class="status" id="printMsg" role="status" aria-live="polite"></p>
@@ -368,11 +369,11 @@ const SERVICE = [
   { key: 'special',    kind: 'text',  label: 'Special Music',  name: 'Special music', out: 'Special Music:', placeholder: 'Who is singing or playing' },
   {                    kind: 'fixed', label: 'Offering', printWithNext: true },  // on paper it shares the offering song's row
   { key: 'offering',   kind: 'song',  label: 'Offering song', sub: 'during tithes and offerings',
-    name: 'Offering song', out: '(Bring Tithes and Offerings to Plate)' },
+    name: 'Offering song', out: '(Bring Tithes and Offerings to Plate)', printPlain: true },  // same song every week, so no yellow on paper
   { key: 'overhead',   kind: 'list',  label: 'Overhead', sub: 'songs shown on the screen', name: 'Overhead songs', out: 'Overhead:' },
   {                    kind: 'fixed', label: 'Sermon' },
   { key: 'invitation', kind: 'song',  label: 'Invitation',     name: 'Invitation song', out: 'Invitation:' },
-  { key: 'closing',    kind: 'song',  label: 'Closing Prayer', name: 'Closing prayer song', out: 'Closing Prayer:' },
+  { key: 'closing',    kind: 'song',  label: 'Closing Prayer', name: 'Closing prayer song', out: 'Closing Prayer:', printPlain: true },
   { key: 'exit',       kind: 'song',  label: 'Exit Song',      name: 'Exit song', out: 'Exit Song:' },
   { key: 'ss',         kind: 'song',  label: 'SS Song', sub: 'Sunday School', name: 'Sunday School song', out: 'SS Song:' }
 ];
@@ -971,7 +972,7 @@ function renderCopier(c, s) {
 
 /* ----- The printed song sheet ----- */
 /* One entry per printed part: a part with no blanks (Sermon), or the lines that go in its yellow boxes,
-   plus the song's two book numbers. */
+   plus the song's two book numbers. Songs that are the same every week print without the yellow (plain). */
 function printRows(s) {
   const rows = [];
   SERVICE.forEach(item => {
@@ -981,8 +982,9 @@ function printRows(s) {
       const v = s.songs[item.key] || {};
       const t = oneLine(v.t).replace(/[.\s]+$/, ''), nums = { h: digitsOf(v.h), r: digitsOf(v.r) };
       if (item.optional && !t && !nums.h && !nums.r) return;
-      if (item.key === 'offering') rows.push({ part: 'Offering', lines: [t], nums, extra: '(Bring Tithes and Offerings to Plate)' });
-      else rows.push({ part: item.label, lines: [t], nums });
+      const plain = !!item.printPlain;
+      if (item.key === 'offering') rows.push({ part: 'Offering', lines: [t], nums, plain, extra: '(Bring Tithes and Offerings to Plate)' });
+      else rows.push({ part: item.label, lines: [t], nums, plain });
     } else if (item.kind === 'text') {
       rows.push({ part: item.label, lines: [oneLine(s.special)] });
     } else if (item.kind === 'list') {
@@ -1057,10 +1059,8 @@ function layoutSheet(s, rows, scale, notesScale) {
   const titleSize = 1.6 * f;
   text('Sunday Songs', W / 2, baseline(y, titleSize, 1.15 * titleSize), titleSize, true, true);
   y += 1.15 * titleSize + 0.25 * f;
-  const dateSize = 1.15 * f, dateH = 1.4 * dateSize, date = longDate(s.date, true);
-  const dateW = Math.min(W, Math.max(12 * dateSize, textWidth(date, dateSize, true) + 0.9 * dateSize));
-  box((W - dateW) / 2, y, dateW, dateH);
-  text(date, W / 2, baseline(y, dateSize, dateH), dateSize, true, true);
+  const dateSize = 1.15 * f, dateH = 1.3 * dateSize;   // the date prints plain (Mom's request)
+  text(longDate(s.date, true), W / 2, baseline(y, dateSize, dateH), dateSize, true, true);
   y += dateH + 0.45 * f;
 
   // Part names on the left, then the song titles, then the two book numbers at the right edge.
@@ -1081,7 +1081,7 @@ function layoutSheet(s, rows, scale, notesScale) {
     row.lines.forEach((t, j) => {
       if (j) y += 0.25 * f;
       const lines = wrapText(t, f, songW - 2 * padX, false);
-      box(songX, y, songW, boxH(lines.length));
+      if (!row.plain) box(songX, y, songW, boxH(lines.length));
       lines.forEach((l, k) => text(l, songX + padX, baseline(y + padY + k * lineH, f, lineH), f));
       y += boxH(lines.length);
     });
@@ -1149,7 +1149,7 @@ function renderPrint(s) {
     'font-family': 'Arial, Helvetica, sans-serif', role: 'img', 'aria-label': 'Sunday Songs' });
   fit.ops.forEach(op => {
     if (op.box) {
-      svg.appendChild(make('rect', { x: n(op.x), y: n(op.y), width: n(op.w), height: n(op.h), rx: n(op.r), fill: '#FFE866' }));
+      svg.appendChild(make('rect', { x: n(op.x), y: n(op.y), width: n(op.w), height: n(op.h), rx: n(op.r), fill: '#FFF5B8' }));   // a light yellow: a strong one soaks the paper
       return;
     }
     const t = svg.appendChild(make('text', { x: n(op.x), y: n(op.y), 'font-size': n(op.size), fill: '#000' }));
