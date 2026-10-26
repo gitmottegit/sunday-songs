@@ -42,6 +42,10 @@
   --good-tint:#E3F1E7;
   --warn:#8A4B00;
   --warn-tint:#FBEEDC;
+  --hl:#FFF1A8;
+  --hl-edge:#9A7400;
+  --hl-ink:#251B1F;
+  --hl-muted:#6B5A1E;
   --font-display:"Libre Caslon Text", Georgia, "Times New Roman", serif;
   --font-body:"Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   --font-num:"Oswald", "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
@@ -53,6 +57,7 @@
     --accent:#E58B9B; --accent-ink:#2B0B12; --gold:#D9AE5B;
     --board:#0D0A0B; --board-ink:#FFFFFF; --board-dim:#6F6266; --board-gold:#E6BC6A;
     --focus:#E6BC6A; --good:#8ED3A0; --good-tint:#18301F; --warn:#F0BE6E; --warn-tint:#33240E;
+    --hl:#F3D46B; --hl-edge:#FFE9A0; --hl-ink:#1F1800; --hl-muted:#5E4C12;
     color-scheme:dark;
   }
 }
@@ -61,6 +66,7 @@
   --accent:#E58B9B; --accent-ink:#2B0B12; --gold:#D9AE5B;
   --board:#0D0A0B; --board-ink:#FFFFFF; --board-dim:#6F6266; --board-gold:#E6BC6A;
   --focus:#E6BC6A; --good:#8ED3A0; --good-tint:#18301F; --warn:#F0BE6E; --warn-tint:#33240E;
+  --hl:#F3D46B; --hl-edge:#FFE9A0; --hl-ink:#1F1800; --hl-muted:#5E4C12;
   color-scheme:dark;
 }
 
@@ -118,7 +124,11 @@ textarea.field{resize:vertical; line-height:1.45}
   background:var(--board); color:var(--board-ink); font-family:var(--font-num); font-weight:600; font-size:1.75rem;
   text-align:center; letter-spacing:.05em; font-variant-numeric:tabular-nums}
 .tile::placeholder{color:var(--board-dim); opacity:1}
+/* The blanks she fills in each week stay highlighted, empty or filled, so they're easy to find and check. */
+.step .field:not(.copy-box),.step .tile{background:var(--hl); border:2px solid var(--hl-edge); color:var(--hl-ink); color-scheme:light}
+.step .field:not(.copy-box)::placeholder,.step .tile::placeholder{color:var(--hl-muted); opacity:1}
 .field:focus,.tile:focus{outline:3px solid var(--focus); outline-offset:1px}
+.step .field:not(.copy-box):focus,.step .tile:focus{outline-color:var(--accent)}
 :focus-visible{outline:3px solid var(--focus); outline-offset:2px}
 
 .oh-rows{display:grid; gap:.6rem}
@@ -187,6 +197,36 @@ details.box[open] > summary::before{content:"\2212"}
 .foot .is-warn{color:var(--warn); font-weight:700}
 .inapp-note{margin:0; padding:.75rem 1rem; border-radius:10px; background:var(--warn-tint); color:var(--warn); font-weight:700}
 
+.print-box{display:grid; gap:.75rem; padding:1rem 1.1rem; background:var(--surface); border:1.5px solid var(--edge); border-radius:var(--radius)}
+.print-box h3{margin:0; font-size:1.1rem}
+
+/* The printed song sheet: one US Letter page in large black-on-white type for older readers.
+   Part names on the left, then the song, then the two book numbers in their own columns. */
+.print-sheet{display:none}
+@media print{
+  @page{size:letter portrait; margin:.5in}
+  html,body{background:#fff !important; color:#000 !important; color-scheme:light}
+  body{padding:0 !important; margin:0 !important}
+  .wrap{display:none !important}
+  .print-sheet{display:block !important}
+}
+.print-sheet{--ps-scale:1; font-family:"Atkinson Hyperlegible", Arial, Helvetica, sans-serif; font-size:calc(18pt * var(--ps-scale)); color:#000; background:#fff}
+.print-sheet.ps-measure{display:block; position:absolute; top:0; left:-10000px; width:7.5in; visibility:hidden}
+.ps-head{text-align:center; padding-bottom:.4em; margin-bottom:.1em; border-bottom:3pt double #000}
+.ps-title{margin:0; font-family:var(--font-display); font-size:1.75em; font-weight:700; line-height:1.1; color:#000}
+.ps-date{margin:.2em 0 0; font-size:1.17em; font-weight:700}
+.ps-table{width:100%; border-collapse:collapse; line-height:1.25}
+.ps-table thead th{padding:.4em .25em .15em; font-size:.72em; font-weight:700; text-align:center; border-bottom:1.5pt solid #000}
+.ps-table tbody th,.ps-table td{padding:.38em .3em; border-bottom:.75pt solid #777; vertical-align:baseline; text-align:left}
+.ps-table tr{break-inside:avoid; page-break-inside:avoid}
+.ps-table .ps-part{width:1%; white-space:nowrap; padding-right:.8em; font-weight:700}
+.ps-table .ps-num{width:12%; text-align:center}
+.ps-table td.ps-num{font-family:Arial, Helvetica, sans-serif; font-size:1.22em; font-weight:700}
+.ps-line{display:block}
+.ps-extra{display:block; font-size:.78em}
+.ps-blank{display:inline-block; width:85%; height:1.1em; border-bottom:1.25pt solid #000; vertical-align:bottom}
+.ps-notes{margin:.7em 0 0; font-size:.9em; line-height:1.35; white-space:pre-wrap; overflow-wrap:anywhere}
+
 .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
 
 @media (prefers-reduced-motion: no-preference){
@@ -248,7 +288,7 @@ details.box[open] > summary::before{content:"\2212"}
 
   <section class="step" aria-labelledby="s2">
     <h2 id="s2" tabindex="-1"><span class="step-n" aria-hidden="true">2</span>Fill in the songs</h2>
-    <p class="hint">Type a song you've used before and its numbers fill in by themselves.</p>
+    <p class="hint">Fill in the yellow boxes. Type a song you've used before and its numbers fill in by themselves.</p>
     <div class="notice" id="notice" hidden>
       <span id="noticeText"></span>
       <button type="button" class="btn btn-quiet" id="undoBtn">Undo</button>
@@ -260,7 +300,7 @@ details.box[open] > summary::before{content:"\2212"}
   </section>
 
   <section class="step" aria-labelledby="s3">
-    <h2 id="s3"><span class="step-n" aria-hidden="true">3</span>Send it to the team</h2>
+    <h2 id="s3"><span class="step-n" aria-hidden="true">3</span>Send it or print it</h2>
     <div class="check" id="blankCheck"></div>
     <p class="preview-label">This is exactly what the team will get:</p>
     <pre class="bubble" id="out"></pre>
@@ -284,6 +324,13 @@ details.box[open] > summary::before{content:"\2212"}
         <li>Tap send.</li>
       </ol>
       <p class="hint">Starting a new email instead? A good subject is “<span id="subjectText"></span>”.</p>
+    </div>
+    <div class="print-box" id="printBox">
+      <h3>Printing copies for church?</h3>
+      <p>This prints one page with the songs in big, easy-to-read letters.</p>
+      <button type="button" class="btn btn-quiet btn-big" id="printBtn">Print the song sheet</button>
+      <p class="hint" id="printHow">On the print screen, pick your printer and how many copies, then tap <strong>Print</strong>.</p>
+      <p class="status" id="printMsg" role="status" aria-live="polite"></p>
     </div>
     <details class="box" id="helperBox">
       <summary>Want someone else to fill in a blank?</summary>
@@ -310,6 +357,9 @@ details.box[open] > summary::before{content:"\2212"}
   <datalist id="songbook"></datalist>
 </div>
 
+<!-- The printed song sheet. Filled in from the form; shows only on paper. -->
+<div class="print-sheet" id="printSheet"></div>
+
 <script>
 (function () {
 'use strict';
@@ -326,7 +376,7 @@ const SERVICE = [
   { key: 'hymn3',      kind: 'song',  label: 'Hymn', sub: 'third, if needed', name: 'Third hymn', out: 'Hymn:', optional: true,
     hint: 'Leave this empty to skip it. It won’t show in the message.' },
   { key: 'special',    kind: 'text',  label: 'Special Music',  name: 'Special music', out: 'Special Music:', placeholder: 'Who is singing or playing' },
-  {                    kind: 'fixed', label: 'Offering' },
+  {                    kind: 'fixed', label: 'Offering', printWithNext: true },  // on paper it shares the offering song's row
   { key: 'offering',   kind: 'song',  label: 'Offering song', sub: 'during tithes and offerings',
     name: 'Offering song', out: '(Bring Tithes and Offerings to Plate)' },
   { key: 'overhead',   kind: 'list',  label: 'Overhead', sub: 'songs shown on the screen', name: 'Overhead songs', out: 'Overhead:' },
@@ -929,9 +979,94 @@ function renderCopier(c, s) {
   if (!c.showingDone) $(c.btn).textContent = c.label(s);
 }
 
+/* ----- The printed song sheet ----- */
+/* One entry per printed part: a part with no song (Sermon), one song, or a list of lines (Overhead). */
+function printRows(s) {
+  const rows = [];
+  SERVICE.forEach(item => {
+    if (item.kind === 'fixed') {
+      if (!item.printWithNext) rows.push({ part: item.label });
+    } else if (item.kind === 'song') {
+      const v = s.songs[item.key] || {};
+      const song = { t: oneLine(v.t).replace(/[.\s]+$/, ''), h: digitsOf(v.h), r: digitsOf(v.r) };
+      if (item.optional && !song.t && !song.h && !song.r) return;
+      if (item.key === 'offering') rows.push({ part: 'Offering', song, extra: '(Bring Tithes and Offerings to Plate)' });
+      else rows.push({ part: item.label, song });
+    } else if (item.kind === 'text') {
+      rows.push({ part: item.label, song: { t: oneLine(s.special), h: '', r: '' } });
+    } else if (item.kind === 'list') {
+      const list = (s.overhead || []).map(oneLine).filter(Boolean);
+      rows.push({ part: item.label, lines: list.length ? list : ['', ''] });
+    }
+  });
+  return rows;
+}
+
+const PRINT_SCALES = [1, 0.93, 0.86, 0.8, 0.74];
+const PRINT_MAX_PX = 9.4 * 96;   // a Letter page less its margins, with room to spare
+
+function renderPrint(s) {
+  const el = (tag, cls, text) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text) e.textContent = text;
+    return e;
+  };
+  const textOrBlank = (cell, text) => { if (text) cell.appendChild(el('span', 'ps-line', text)); else cell.appendChild(el('span', 'ps-blank')); };
+  const sheet = $('#printSheet');
+  sheet.textContent = '';
+  const head = el('header', 'ps-head');
+  head.appendChild(el('h1', 'ps-title', 'Sunday Songs'));
+  const date = el('p', 'ps-date', longDate(s.date, true));
+  if (!s.date) date.appendChild(el('span', 'ps-blank'));
+  head.appendChild(date);
+  sheet.appendChild(head);
+
+  const table = el('table', 'ps-table');
+  const hr = el('tr');
+  [['', 'ps-part'], ['', ''], ['Hymnal', 'ps-num'], ['Rejoice', 'ps-num']].forEach(([text, cls]) => hr.appendChild(el('th', cls, text)));
+  table.appendChild(el('thead')).appendChild(hr);
+  const body = table.appendChild(el('tbody'));
+  printRows(s).forEach(row => {
+    const tr = body.appendChild(el('tr'));
+    const part = tr.appendChild(el('th', 'ps-part', row.part));
+    part.scope = 'row';
+    if (!row.song && !row.lines) { part.colSpan = 4; return; }
+    const song = tr.appendChild(el('td', 'ps-song'));
+    if (row.lines) row.lines.forEach(t => textOrBlank(song, t));
+    else textOrBlank(song, row.song.t);
+    if (row.extra) song.appendChild(el('span', 'ps-extra', row.extra));
+    tr.appendChild(el('td', 'ps-num', row.song ? row.song.h : ''));
+    tr.appendChild(el('td', 'ps-num', row.song ? row.song.r : ''));
+  });
+  sheet.appendChild(table);
+
+  const notes = str(s.notes).trim();
+  if (notes) {
+    const p = el('p', 'ps-notes');
+    p.appendChild(el('strong', '', 'Notes: '));
+    p.appendChild(document.createTextNode(notes));
+    sheet.appendChild(p);
+  }
+  fitPrint();
+}
+
+/* Lays the sheet out off screen at the printed width and steps the type down until it fits one page.
+   Most weeks print at full size; a third hymn, many overhead songs or long notes make it a little smaller. */
+function fitPrint() {
+  const sheet = $('#printSheet');
+  sheet.classList.add('ps-measure');
+  for (const scale of PRINT_SCALES) {
+    sheet.style.setProperty('--ps-scale', scale);
+    if (sheet.offsetHeight <= PRINT_MAX_PX) break;
+  }
+  sheet.classList.remove('ps-measure');
+}
+
 function render() {
   const s = readState();
   $('#out').textContent = buildMessage(s);
+  renderPrint(s);
   $('#subjectText').textContent = subjectLine(s);
   $('#subjectDate').textContent = shortDate(s.date) || 'the new date';
   renderDate(s.date);
@@ -1071,6 +1206,31 @@ function doCopy(c) {
   learnSongs(s);
 }
 
+/* ----- Print ----- */
+const inMessenger = () => /FBAN|FBAV|FB_IAB|FBIOS|Messenger/i.test(navigator.userAgent || '');
+
+function doPrint() {
+  const s = readState();
+  renderPrint(s);
+  learnSongs(s);
+  const m = $('#printMsg');
+  m.className = 'status';
+  m.textContent = '';
+  // If no print screen shows up (some phones and in-app browsers ignore it), say what to do instead.
+  let opened = false;
+  const seen = () => { opened = true; };
+  window.addEventListener('beforeprint', seen);
+  try { window.print(); } catch (e) { /* the message below covers it */ }
+  setTimeout(() => {
+    window.removeEventListener('beforeprint', seen);
+    if (opened) return;
+    m.className = 'status is-warn';
+    m.textContent = inMessenger()
+      ? 'Printing doesn’t work inside Messenger. Open Sunday Songs from the icon on your Home Screen and print from there.'
+      : 'If no print screen opened, tap the Share button (the square with an arrow), then tap Print.';
+  }, 2500);
+}
+
 /* ----- Fill from a pasted list ----- */
 function onPasteFill() {
   const text = $('#pasteIn').value;
@@ -1191,6 +1351,9 @@ function bind() {
   $('#copyBtn').addEventListener('click', () => doCopy(COPIERS.list));
   $('#helperCopy').addEventListener('click', () => doCopy(COPIERS.helper));
   $('#pasteGo').addEventListener('click', onPasteFill);
+  $('#printBtn').addEventListener('click', doPrint);
+  window.addEventListener('beforeprint', () => renderPrint(readState()));
+  try { document.fonts.ready.then(fitPrint); } catch (e) { /* older browsers: measured with fallback fonts */ }
 }
 
 function start() {
@@ -1206,7 +1369,7 @@ function start() {
   if (window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)) {
     $('#saveNote').textContent = 'Your work is kept inside this Sunday Songs icon on this phone, so always open it from the icon. Nobody sees your list until you paste it into a message.';
   }
-  if (/FBAN|FBAV|FB_IAB|FBIOS|Messenger/i.test(navigator.userAgent || '')) $('#inappNote').hidden = false;
+  if (inMessenger()) $('#inappNote').hidden = false;
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
 }
 
