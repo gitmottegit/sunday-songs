@@ -201,40 +201,21 @@ details.box[open] > summary::before{content:"\2212"}
 .print-box h3{margin:0; font-size:1.1rem}
 
 /* The printed song sheet: always exactly one US Letter page, in large black Arial for older readers, with no
-   ruled lines. Everything filled in each week (the date, songs, numbers, names) prints in a yellow box, filled or
-   empty; the notes get one when there are any. Part names on the left, then the song, then the two book numbers. */
+   ruled lines. The song titles and the other words filled in each week (the date, special music, notes) print on
+   yellow; the book numbers print plain. It is drawn as one picture (renderPrint) that always spans the page width
+   and keeps its shape, so a phone's text size or zoom can't push it past the bottom of the page. */
 .print-sheet{display:none}
 @media print{
-  @page{size:letter; margin:.5in}
+  @page{size:letter portrait; margin:.5in}
   html,body{background:#fff !important; color:#000 !important; color-scheme:light; height:auto !important}
   body{padding:0 !important; margin:0 !important}
   .wrap{display:none !important}
-  /* fitPrint() sizes the type to fit; the cap means anything left over is cut off rather than starting a page 2. */
-  .print-sheet{display:block !important; max-height:var(--ps-max, 9.8in); overflow:hidden}
+  .print-sheet{display:block !important}
 }
-.print-sheet{--ps-scale:1; font-family:Arial, Helvetica, sans-serif; font-size:calc(18pt * var(--ps-scale)); line-height:1.2; color:#000; background:#fff}
-.print-sheet.ps-measure{display:block; position:absolute; top:0; left:-10000px; width:var(--ps-width, 7.5in); visibility:hidden}
-/* Phones and computers leave out background colors when printing unless told to keep them. */
-.ps-hl{background:#FFE866; -webkit-print-color-adjust:exact; print-color-adjust:exact}
-.ps-head{text-align:center; margin-bottom:.45em}
-.ps-title{margin:0; font-family:inherit; font-size:1.6em; font-weight:700; line-height:1.15; color:#000}
-.ps-date{margin:.25em 0 0; font-size:1.15em; font-weight:700}
-.ps-date .ps-hl{display:inline-block; min-width:12em; min-height:1.4em; padding:.1em .45em; border-radius:.15em}
-.ps-table{width:100%; border-collapse:separate; border-spacing:0 .3em}
-.ps-table thead th{padding:0; font-size:.8em; font-weight:700; text-align:center; vertical-align:bottom}
-.ps-table tbody th,.ps-table td{padding:0; vertical-align:top; text-align:left}
-.ps-table tr{break-inside:avoid; page-break-inside:avoid}
-.ps-table .ps-part{width:1%; white-space:nowrap; padding:.1em .7em .1em 0; font-weight:700}
-.ps-table .ps-num{width:13%}
-.ps-box{display:block; min-height:1.4em; padding:.1em .35em; border-radius:.15em; overflow-wrap:anywhere}
-.ps-box + .ps-box{margin-top:.25em}
-td.ps-num .ps-box{margin-left:.4em; text-align:center; font-weight:700}
-.ps-table thead .ps-num{padding-left:.5em}
-/* Zero width keeps this one line long without widening the song column; it runs on under the empty number columns. */
-.ps-extra{display:block; width:0; white-space:nowrap; padding:.15em .35em 0; font-size:.85em}
-.ps-notes{margin-top:.5em}
-.ps-notes-label{margin:0 0 .15em; font-weight:700}
-.ps-notes .ps-box{font-size:calc(.9em * var(--ps-notes, 1)); line-height:1.3; white-space:pre-wrap}
+/* renderPrint sets the frame's height (as padding) to the drawing's shape, which is shorter than the page. */
+.ps-frame{position:relative; height:0; break-inside:avoid; page-break-inside:avoid}
+.ps-frame svg{position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact}
 
 .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
 
@@ -336,7 +317,7 @@ td.ps-num .ps-box{margin-left:.4em; text-align:center; font-weight:700}
     </div>
     <div class="print-box" id="printBox">
       <h3>Printing copies for church?</h3>
-      <p>This prints the songs on one page in big, easy-to-read letters. Everything you fill in each week prints in yellow.</p>
+      <p>This prints the songs on one page in big, easy-to-read letters. The song titles, the date, special music and notes print on yellow. The book numbers print plain.</p>
       <button type="button" class="btn btn-quiet btn-big" id="printBtn">Print the song sheet</button>
       <p class="hint" id="printHow">On the print screen, pick your printer and how many copies, then tap <strong>Print</strong>.</p>
       <p class="status" id="printMsg" role="status" aria-live="polite"></p>
@@ -990,7 +971,7 @@ function renderCopier(c, s) {
 
 /* ----- The printed song sheet ----- */
 /* One entry per printed part: a part with no blanks (Sermon), or the lines that go in its yellow boxes,
-   plus the two number boxes for a song. */
+   plus the song's two book numbers. */
 function printRows(s) {
   const rows = [];
   SERVICE.forEach(item => {
@@ -1012,90 +993,183 @@ function printRows(s) {
   return rows;
 }
 
-/* iPhones, iPads and Safari on a Mac print about 7% larger than Chrome and the iPhone adds its own header and
-   footer, so their sheet is measured narrower and shorter to stay on one page. */
-const ua = navigator.userAgent || '';
-const printsLikeSafari = /iPhone|iPad|iPod/.test(ua) || (/AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR|Firefox|Android/.test(ua));
-const PRINT_BOX = printsLikeSafari ? { width: '6.9in', fit: 8.0, max: '8.2in' } : { width: '7.5in', fit: 9.3, max: '9.8in' };
+/* The sheet is drawn in hundredths of an inch, 7.5 inches wide and at most 9.6 tall: a Letter page less half-inch
+   margins, with room to spare. Printing stretches the drawing to fit the page width, so its shape never changes and
+   a phone's text size or zoom can't push it onto a second page (Mom's iPhone printed everything 17% larger). */
+const PS = { W: 750, H: 960, F: 22 };   // F: the full type size, about 16 points
+const NOTES_MIN = 0.8;
+const textWidths = new Map();
+let measureCtx;
 
-/* Builds the sheet from the list and sizes it to one page. Returns the type sizes used (1 is full size). */
-function renderPrint(s) {
-  const el = (tag, cls, text) => {
-    const e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text) e.textContent = text;
-    return e;
-  };
-  const box = text => el('span', 'ps-box ps-hl', text);
-  const sheet = $('#printSheet');
-  sheet.textContent = '';
-  const head = el('header', 'ps-head');
-  head.appendChild(el('h1', 'ps-title', 'Sunday Songs'));
-  head.appendChild(el('p', 'ps-date')).appendChild(el('span', 'ps-hl', longDate(s.date, true)));
-  sheet.appendChild(head);
+/* How wide a piece of text is in Arial at a size, with a little to spare so a line never runs past its box. */
+function textWidth(text, size, bold) {
+  const key = (bold ? 'b' : 'r') + text;
+  let w = textWidths.get(key);
+  if (w === undefined) {
+    if (measureCtx === undefined) {
+      try { measureCtx = document.createElement('canvas').getContext('2d'); } catch (e) { measureCtx = null; }
+    }
+    if (measureCtx) {
+      measureCtx.font = (bold ? 'bold ' : '') + '100px Arial, Helvetica, sans-serif';
+      w = measureCtx.measureText(text).width / 100;
+    } else {
+      w = text.length * (bold ? 0.65 : 0.6);   // a safe guess when the phone can't measure
+    }
+    if (textWidths.size > 5000) textWidths.clear();
+    textWidths.set(key, w);
+  }
+  return w * size * 1.04;
+}
 
-  const table = el('table', 'ps-table');
-  const hr = el('tr');
-  [['', 'ps-part'], ['', ''], ['Hymnal', 'ps-num'], ['Rejoice', 'ps-num']].forEach(([text, cls]) => hr.appendChild(el('th', cls, text)));
-  table.appendChild(el('thead')).appendChild(hr);
-  const body = table.appendChild(el('tbody'));
-  printRows(s).forEach(row => {
-    const tr = body.appendChild(el('tr'));
-    const part = tr.appendChild(el('th', 'ps-part', row.part));
-    part.scope = 'row';
-    if (!row.lines) { part.colSpan = 4; return; }
-    const song = tr.appendChild(el('td', 'ps-song'));
-    row.lines.forEach(t => song.appendChild(box(t)));
-    if (row.extra) song.appendChild(el('span', 'ps-extra', row.extra));
-    ['h', 'r'].forEach(f => {
-      const td = tr.appendChild(el('td', 'ps-num'));
-      if (row.nums) td.appendChild(box(row.nums[f]));
+/* Breaks text into lines that fit a width. Line breaks typed in the notes are kept. */
+function wrapText(text, size, maxW, bold) {
+  const out = [];
+  String(text || '').split('\n').forEach(para => {
+    let line = '';
+    para.replace(/[ \t ]+/g, ' ').trim().split(' ').filter(Boolean).forEach(word => {
+      // A word too long for a whole line (a web link, say) is split wherever it has to be.
+      while (word.length > 1 && textWidth(word, size, bold) > maxW) {
+        let n = word.length - 1;
+        while (n > 1 && textWidth(word.slice(0, n), size, bold) > maxW) n--;
+        if (line) { out.push(line); line = ''; }
+        out.push(word.slice(0, n));
+        word = word.slice(n);
+      }
+      const next = line ? line + ' ' + word : word;
+      if (line && textWidth(next, size, bold) > maxW) { out.push(line); line = word; } else line = next;
     });
+    out.push(line);
   });
-  sheet.appendChild(table);
+  return out;
+}
+
+/* Lays out the sheet at a type size (1 is full size; notesScale shrinks the notes on their own). Returns the
+   drawing as boxes and lines of text, and how tall it is. */
+function layoutSheet(s, rows, scale, notesScale) {
+  const W = PS.W, f = PS.F * scale, ops = [];
+  const box = (x, y, w, h) => ops.push({ box: true, x, y, w, h, r: 0.15 * f });
+  const text = (str, x, y, size, bold, middle) => { if (str) ops.push({ text: str, x, y, size, bold, middle }); };
+  // Where the baseline goes so Arial letters sit in the middle of a line this tall.
+  const baseline = (top, size, lineH) => top + (lineH - 1.117 * size) / 2 + 0.905 * size;
+  const lineH = 1.2 * f, padY = 0.1 * f, padX = 0.35 * f, boxH = n => n * lineH + 2 * padY;
+  let y = 0;
+
+  const titleSize = 1.6 * f;
+  text('Sunday Songs', W / 2, baseline(y, titleSize, 1.15 * titleSize), titleSize, true, true);
+  y += 1.15 * titleSize + 0.25 * f;
+  const dateSize = 1.15 * f, dateH = 1.4 * dateSize, date = longDate(s.date, true);
+  const dateW = Math.min(W, Math.max(12 * dateSize, textWidth(date, dateSize, true) + 0.9 * dateSize));
+  box((W - dateW) / 2, y, dateW, dateH);
+  text(date, W / 2, baseline(y, dateSize, dateH), dateSize, true, true);
+  y += dateH + 0.45 * f;
+
+  // Part names on the left, then the song titles, then the two book numbers at the right edge.
+  const headSize = 0.75 * f;
+  const numW = Math.max(textWidth('Rejoice', headSize, true) + 0.3 * f, textWidth('0000', f, true) + 0.6 * f);
+  const songX = Math.max(...rows.filter(r => r.lines).map(r => textWidth(r.part, f, true))) + 0.6 * f;
+  const songW = W - songX - 2 * numW - 0.1 * f;
+  const numMid = [W - 1.5 * numW, W - 0.5 * numW];
+  text('Hymnal', numMid[0], baseline(y, headSize, 1.2 * headSize), headSize, true, true);
+  text('Rejoice', numMid[1], baseline(y, headSize, 1.2 * headSize), headSize, true, true);
+  y += 1.2 * headSize + 0.2 * f;
+
+  rows.forEach((row, i) => {
+    if (i) y += 0.3 * f;
+    const first = baseline(y + padY, f, lineH);   // the row's first line, shared by its name and numbers
+    text(row.part, 0, first, f, true);
+    if (!row.lines) { y += boxH(1); return; }
+    row.lines.forEach((t, j) => {
+      if (j) y += 0.25 * f;
+      const lines = wrapText(t, f, songW - 2 * padX, false);
+      box(songX, y, songW, boxH(lines.length));
+      lines.forEach((l, k) => text(l, songX + padX, baseline(y + padY + k * lineH, f, lineH), f));
+      y += boxH(lines.length);
+    });
+    if (row.nums) {
+      text(row.nums.h, numMid[0], first, f, true, true);
+      text(row.nums.r, numMid[1], first, f, true, true);
+    }
+    if (row.extra) {   // one line, running on under the empty number columns
+      const size = 0.85 * f;
+      text(row.extra, songX + padX, baseline(y + 0.1 * f, size, 1.2 * size), size);
+      y += 0.1 * f + 1.2 * size;
+    }
+  });
 
   const notes = str(s.notes).trim();
   if (notes) {
-    const wrap = sheet.appendChild(el('div', 'ps-notes'));
-    wrap.appendChild(el('p', 'ps-notes-label', 'Notes'));
-    wrap.appendChild(box(notes));
+    y += 0.5 * f;
+    text('Notes', 0, baseline(y, f, lineH), f, true);
+    y += lineH + 0.15 * f;
+    const size = 0.9 * f * notesScale, lh = 1.3 * size;
+    const lines = wrapText(notes, size, W - 2 * padX, false);
+    box(0, y, W, lines.length * lh + 2 * padY);
+    lines.forEach((l, k) => text(l, padX, baseline(y + padY + k * lh, size, lh), size));
+    y += lines.length * lh + 2 * padY;
   }
-  return fitPrint();
+  return { height: y, ops };
 }
 
-/* Lays the sheet out off screen at the printed width and finds the biggest type that fits one page.
-   Most weeks print at full size. Long notes shrink first, so the songs stay big; then everything shrinks. */
-const NOTES_MIN = 0.8;
-function fitPrint() {
-  const sheet = $('#printSheet');
-  const fit = PRINT_BOX.fit * 96;
-  const fits = (scale, notes) => {
-    sheet.style.setProperty('--ps-scale', scale.toFixed(3));
-    sheet.style.setProperty('--ps-notes', notes.toFixed(3));
-    return sheet.offsetHeight <= fit;
-  };
-  // Text rewraps as it shrinks, so the height isn't proportional to the size: narrow it down step by step.
+/* Finds the biggest type that fits. Most weeks print at full size. Long notes shrink a little first, so the songs
+   stay big; then everything shrinks. Text rewraps as it shrinks, so the size is narrowed down step by step. */
+function fitSheet(s, rows) {
+  const fits = (scale, notes) => layoutSheet(s, rows, scale, notes).height <= PS.H;
   const largest = (lo, test) => {
     if (test(1)) return 1;
     let hi = 1;
     for (let i = 0; i < 8; i++) { const mid = (lo + hi) / 2; if (test(mid)) lo = mid; else hi = mid; }
     return lo;
   };
-  sheet.style.setProperty('--ps-width', PRINT_BOX.width);
-  sheet.style.setProperty('--ps-max', PRINT_BOX.max);
-  sheet.classList.add('ps-measure');
   let scale = 1;
   let notes = largest(NOTES_MIN, n => fits(1, n));
   if (!fits(1, notes)) {
     // Still too long: shrink everything, keeping the notes smaller only if that leaves the songs clearly bigger.
     notes = 1;
-    scale = largest(0.2, sc => fits(sc, 1));
-    const withSmallNotes = largest(0.2, sc => fits(sc, NOTES_MIN));
-    if (withSmallNotes - scale >= 0.05) { notes = NOTES_MIN; scale = withSmallNotes; }
+    scale = largest(0.15, sc => fits(sc, 1));
+    const withSmallNotes = largest(0.15, sc => fits(sc, NOTES_MIN));
+    if (withSmallNotes - scale >= 0.05 || !fits(scale, 1)) { notes = NOTES_MIN; scale = withSmallNotes; }
   }
-  fits(scale, notes);
-  sheet.classList.remove('ps-measure');
-  return { scale, notes };
+  return Object.assign(layoutSheet(s, rows, scale, notes), { scale, notes });
+}
+
+/* Draws the sheet for the list as one picture sized to fit the page. Returns the type sizes used (1 is full size),
+   and whether the notes are too long to print at a size anyone could read. */
+function renderPrint(s) {
+  const fit = fitSheet(s, printRows(s));
+  const NS = 'http://www.w3.org/2000/svg';
+  const make = (tag, attrs) => {
+    const e = document.createElementNS(NS, tag);
+    Object.keys(attrs).forEach(k => e.setAttribute(k, attrs[k]));
+    return e;
+  };
+  const n = v => String(Math.round(v * 10) / 10);
+  // Only as tall as the list needs (taller than the page only when even the smallest type runs long).
+  const h = fit.height > PS.H ? Math.ceil(fit.height) : Math.min(PS.H, Math.ceil(fit.height) + 2);
+  const svg = make('svg', { viewBox: '0 0 ' + PS.W + ' ' + h, preserveAspectRatio: 'xMidYMin meet',
+    'font-family': 'Arial, Helvetica, sans-serif', role: 'img', 'aria-label': 'Sunday Songs' });
+  fit.ops.forEach(op => {
+    if (op.box) {
+      svg.appendChild(make('rect', { x: n(op.x), y: n(op.y), width: n(op.w), height: n(op.h), rx: n(op.r), fill: '#FFE866' }));
+      return;
+    }
+    const t = svg.appendChild(make('text', { x: n(op.x), y: n(op.y), 'font-size': n(op.size), fill: '#000' }));
+    if (op.bold) t.setAttribute('font-weight', '700');
+    if (op.middle) t.setAttribute('text-anchor', 'middle');
+    t.textContent = op.text;
+  });
+  const frame = document.createElement('div');
+  frame.className = 'ps-frame';
+  frame.style.paddingTop = (Math.min(h, PS.H) / PS.W * 100) + '%';
+  if (h > PS.H) {
+    // Even the smallest type runs long (pages of notes): narrow the picture so all of it still fits on the page.
+    frame.style.width = (PS.H / h * 100) + '%';
+    frame.style.margin = '0 auto';
+  }
+  frame.appendChild(svg);
+  const sheet = $('#printSheet');
+  sheet.textContent = '';
+  sheet.appendChild(frame);
+  return { scale: fit.scale, notes: fit.notes, tooLong: fit.height > PS.H };
 }
 
 function render() {
@@ -1243,7 +1317,7 @@ function doCopy(c) {
 }
 
 /* ----- Print ----- */
-const inMessenger = () => /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram/i.test(ua);
+const inMessenger = () => /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram/i.test(navigator.userAgent || '');
 const isStandalone = () => window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
 let printSeen = false;   // set when a print screen really opens
 let printTimer = 0;
@@ -1268,6 +1342,11 @@ function doPrint() {
   }
   const size = renderPrint(s);
   learnSongs(s);
+  if (size.tooLong) {
+    clearTimeout(printTimer);
+    printNote('The notes are too long to fit on one page in letters anyone could read. Make the notes shorter, then tap Print again.', true);
+    return;
+  }
   printNote(size.scale < 0.85 ? 'This week’s list is long, so the letters print smaller to keep it on one page.' +
     (str(s.notes).trim() ? ' Shorter notes for the team make them bigger.' : '') : '');
   // If no print screen shows up (some phones and in-app browsers ignore it), say what to do instead.
